@@ -4,4 +4,110 @@
 
 {% block body %}
     <h1>BSX Homepage</h1>
+
+    <table class="table table-bordered">
+        <tr>
+            <th>Name</th>
+            <th>Ticker</th>
+            <th>Amount</th>
+            <th>First Bought</th>
+            <th>Last Bought</th>
+            <th>Currency</th>
+            <th>Current Price</th>
+            <th>Average Price</th>
+            <th>Stock Day Gain/Loss</th>
+            <th>Stock Gain/Loss (average)</th>
+            <th>Potintal Gain/Loss</th>
+            <th>Potintal Gain/Loss /w Dividends</th>
+            <th>Total Dividends</th>
+            <th>Last Sold</th>
+            <th>Sold</th>
+            <th>Profit</th>
+            <th>Type</th>
+        </tr>
+
+        <tr>
+            <td>Minto</td>
+            <td>MI.UN:CA</td>
+            <td>1</td>
+            <td>03/04/2021</td>
+            <td>03/04/2021</td>
+            <td>CAD</td>
+            <td>21.50</td>
+            <td>21.50</td>
+            <td>Current Price  - Average Price</td>
+            <td>21.50 - 18.98</td>
+            <td>$0</td>
+            <td>18.98 - 21.50 - 20 + 0</td>
+            <td>Never</td>
+            <td>$0</td>
+            <td>$0</td>
+            <td>$0</td>
+            <td>Red</td>
+        </tr>
+
+        <tr>
+            <td>Coca-Cola</td>
+            <td>KO:US</td>
+            <td>1</td>
+            <td>03/08/21</td>
+            <td>03/08/21</td>
+            <td>USD</td>
+            <td>54.96</td>
+            <td>51.5</td>
+            <td>+3.46</td>
+            <td>+0.13</td>
+            <td>0.5</td>
+            <td>18.98 - 21.50 - 20 + 0</td>
+            <td>Never</td>
+            <td>$0</td>
+            <td>$0</td>
+            <td>$0</td>
+            <td>Blue</td>
+        </tr>
+
+        {% for stock in stocks %}
+            <tr>
+                <td>{{ stock.name }}</td>
+                <td>{{ stock.ticker }}</td>
+                <td>{{ stock.shares }}</td>
+                <td>{{ stock.firstBought|date("m/d/Y") }}</td>
+                <td>{{ stock.lastBought|date("m/d/Y") }}</td>
+                <td>{{ stock.currency }}</td>
+                <td>$</td>
+                <td>${{ stock.averagePrice }}</td>
+                <td>Day G/L</td>
+                <td>Stock G/L</td>
+                <td>Total G/L</td>
+                <td>Total G/L /w D</td>
+                <td>{{ stock.dividends }}</td>
+                <td>{{ stock.lastSold|date("m/d/Y") }}</td>
+                <td>${{ stock.sold }}</td>
+                <td>${{ stock.profit }}</td>
+                <td>{{ stock.type }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <article>
+        <h2>Notes on Project</h2>
+        
+        <h3>What should this project do</h3>
+        <p>
+            <ul>
+                <li>View what stocks I own, how much of each stock,what the current stock price is, and how much I would gain/loss if I sold it all (with and without dividends)</li>
+                <li>Current Gain/Loss for all of my stocks combined (with and without dividends)</li>
+                <li>Dividend Payments for each stock I own and how much I earned. Each Payment and Total</li>
+                <li>Dividend Total Amounts for Each month</li>
+            </ul>
+        </p>
+    </article>
+
+    <article>
+        <h2>TODO LIST</h2>
+        <ul>
+            <li>Create Dividened Entity, Page and Form</li>
+            <li>Get Total Dividened Payment amount and add to homepage stock table column</li>
+        </ul>
+    </article>
 {% endblock %}
