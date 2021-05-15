@@ -58,11 +58,6 @@ class Stock
     private $sold;
 
     /**
-     * @ORM\Column(type="float")
-     */
-    private $profit;
-
-    /**
      * @ORM\Column(type="integer")
      */
     private $type;
@@ -76,6 +71,21 @@ class Stock
      * @ORM\Column(type="date", nullable=true)
      */
     private $last_sold;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $buy_currency;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $profit_can;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $profit_usd;
 
     public function getId(): ?int
     {
@@ -197,25 +207,6 @@ class Stock
         return $this;
     }
 
-    public function getProfit(): ?float
-    {
-        return $this->profit;
-    }
-
-    public function setProfit(float $profit): self
-    {
-        $this->profit = $profit;
-
-        return $this;
-    }
-
-    public function addProfit(float $profit): self
-    {
-        $this->profit += $profit;
-
-        return $this;
-    }
-
     public function getType(): ?int
     {
         return $this->type;
@@ -248,6 +239,56 @@ class Stock
     public function setLastSold(?\DateTimeInterface $last_sold): self
     {
         $this->last_sold = $last_sold;
+
+        return $this;
+    }
+
+    public function getBuyCurrency(): ?int
+    {
+        return $this->buy_currency;
+    }
+
+    public function setBuyCurrency(int $buy_currency): self
+    {
+        $this->buy_currency = $buy_currency;
+
+        return $this;
+    }
+
+    public function getProfitCan(): ?float
+    {
+        return $this->profit_can;
+    }
+
+    public function setProfitCan(float $profit_can): self
+    {
+        $this->profit_can = $profit_can;
+
+        return $this;
+    }
+
+    public function addProfitCan(float $profit_can): self
+    {
+        $this->profit_can += $profit_can;
+
+        return $this;
+    }
+
+    public function getProfitUsd(): ?float
+    {
+        return $this->profit_usd;
+    }
+
+    public function setProfitUsd(float $profit_usd): self
+    {
+        $this->profit_usd = $profit_usd;
+
+        return $this;
+    }
+
+    public function addProfitUsd(float $profit_usd): self
+    {
+        $this->profit_usd += $profit_usd;
 
         return $this;
     }

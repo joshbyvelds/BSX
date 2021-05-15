@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 use App\Entity\Stock;
+use App\Entity\Dividend;
 use App\Form\AddStockType;
 use App\Form\BuyStockType;
 use App\Form\SellStockType;
@@ -15,6 +16,11 @@ use App\Repository\StockRepository;
 
 class BSXController extends AbstractController
 {
+    private $trading_fee = 9.95;
+    private $CANtoUSDBuy = 0.8378;
+    private $USDtoCANBuy = 1.2286;
+    private $CANtoUSDSell = 0.8139;
+    private $USDtoCANSell = 1.1936;
     /**
      * @Route("/", name="index")
      */
@@ -80,9 +86,39 @@ class BSXController extends AbstractController
         $form->handleRequest($request);
 
         if($form->isSubmitted()){
+            $data = $form->getData();
+            if($data->getBuyCurrency() === 1)
+            {
+                if($data->getCurrency() === 1){
+                    $stock->setProfitCan((($data->getShares() * $data->getAveragePrice()) + $this->trading_fee) * -1);
+                    $stock->setProfitUsd(0);
+                }
+
+                if($data->getCurrency() === 2){
+                    $stock->setProfitCan(((($data->getShares() * $data->getAveragePrice()) + $this->trading_fee) * $this->USDtoCANBuy) * -1);
+                    $stock->setProfitUsd(0);
+                }
+                
+            }
+
+            if($data->getBuyCurrency() === 2)
+            {
+                if($data->getCurrency() === 1){
+                    $stock->setProfitCan(0);
+                    $stock->setProfitUsd(((($data->getShares() * $data->getAveragePrice()) + $this->trading_fee) * $this->CANtoUSDBuy) * -1);
+                }
+
+                if($data->getCurrency() === 2){
+                    $stock->setProfitCan(0);
+                    $stock->setProfitUsd((($data->getShares() * $data->getAveragePrice()) + $this->trading_fee) * -1);
+                }
+            }
+
             $em = $this->getDoctrine()->getManager();
             $em->persist($stock);
             $em->flush();
+
+            return $this->redirectToRoute('index');
         }
 
         return $this->render('bsx/forms/add.html.twig', [
@@ -107,7 +143,7 @@ class BSXController extends AbstractController
                 
                 $stock = $form->get("ticker")->getData();
 
-                // calculate new average price
+                // Calculate new average price
                 $old_total = $stock->getAveragePrice() *  $stock->getShares();
                 $purchase_total = $data['shares'] * $data['price'];
                 $new_average = ($old_total + $purchase_total) / ($stock->getShares() + $data['shares']);
@@ -116,11 +152,36 @@ class BSXController extends AbstractController
                 $stock->setLastBought($data['buy_date']);
                 $stock->setAveragePrice(round($new_average, 2, PHP_ROUND_HALF_UP));
                 //dump($stock);
-            
-                $em->persist($stock);
-                $em->flush();
+
+                // Adjust Profit
+                if($data['buy_currency'] === 1)
+                {
+                  
+                    if($stock->getCurrency() === 1){
+                        $stock->addProfitCan(($purchase_total + $this->trading_fee) * -1);
+                    }
+
+                    if($stock->getCurrency() === 2){
+                        $stock->addProfitCan((($purchase_total + $this->trading_fee) * $this->USDtoCANBuy) * -1);
+                    }
+                    
+                }
+
+                if($data['buy_currency'] === 2)
+                {
+                    if($stock->getCurrency() === 1){
+                        $stock->addProfitUsd((($purchase_total + $this->trading_fee) * $this->CANtoUSDBuy) * -1);
+                    }
+
+                    if($stock->getCurrency() === 2){
+                        $stock->addProfitUsd(($purchase_total + $this->trading_fee) * -1);
+                    }
+                }
+                
+               $em->persist($stock);
+               $em->flush();
         
-                return $this->redirectToRoute('index');
+               return $this->redirectToRoute('index');
             }
         }
 
@@ -146,11 +207,38 @@ class BSXController extends AbstractController
                 $data = $form->getData();
                 $stock = $form->get("ticker")->getData();
 
-                $stock->sellShares($data['shares']);
-                $stock->setLastSold($data['sell_date']);
 
-                $stock->addSold($data['price']);
-                $stock->addProfit($data['price']);
+                $stock->sellShares($data['shares']);
+                $stock->setLastSold($data['sell_date']);                
+                $sell_amount = $data['shares'] * $data['price'];
+
+
+                // Adjust Profit
+                if($data['sell_currency'] === 1)
+                {
+                  
+                    if($stock->getCurrency() === 1){
+                        $stock->addProfitCan(($sell_amount - $this->trading_fee));
+                    }
+
+                    if($stock->getCurrency() === 2){
+                        $stock->addProfitCan((($sell_amount - $this->trading_fee) * $this->USDtoCANSell));
+                    }
+                    
+                }
+
+                if($data['sell_currency'] === 2)
+                {
+                    if($stock->getCurrency() === 1){
+                        $stock->addProfitUsd((($sell_amount - $this->trading_fee) * $this->CANtoUSDSell));
+                    }
+
+                    if($stock->getCurrency() === 2){
+                        $stock->addProfitUsd(($sell_amount - $this->trading_fee));
+                    }
+                }
+
+                $stock->addSold(($sell_amount - $this->trading_fee));
 
                 if($stock->getShares() === 0){
                     $stock->setAveragePrice(0);
@@ -176,6 +264,50 @@ class BSXController extends AbstractController
     {
         return $this->render('bsx/stock.html.twig', [
             'controller_name' => 'BSXController',
+        ]);
+    }
+
+    /**
+     * @Route("/dividend", name="dividend")
+     */
+    public function dividend(Request $request): Response
+    {
+        $dividend = new Dividend();
+        $form = $this->createForm(DividendType::class, $dividend);
+        
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()){
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($dividend);
+            $em->flush();
+        }
+
+        return $this->render('bsx/dividend.html.twig', [
+            'controller_name' => 'BSXController',
+            'form' => $form->createView(),
+        ]);
+    }
+
+    /**
+     * @Route("/dividend/add", name="add_dividend")
+     */
+    public function addDividend(Request $request): Response
+    {
+        $dividend = new Dividend();
+        $form = $this->createForm(DividendType::class, $dividend);
+        
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()){
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($dividend);
+            $em->flush();
+        }
+
+        return $this->render('bsx/forms/dividend.html.twig', [
+            'controller_name' => 'BSXController',
+            'form' => $form->createView(),
         ]);
     }
 }

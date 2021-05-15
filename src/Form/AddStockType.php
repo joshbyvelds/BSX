@@ -21,13 +21,18 @@ class AddStockType extends AbstractType
             ->add('last_bought')
             ->add('average_price')
             ->add('type')
+            ->add('buy_currency', ChoiceType::class, [
+                'choices'  => [
+                    'CAD' => 1,
+                    'USD' => 2,
+                ],
+            ])
             ->add('currency', ChoiceType::class, [
                 'choices'  => [
                     'CAD' => 1,
                     'USD' => 2,
                 ],
             ])
-            ->add('profit')
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'

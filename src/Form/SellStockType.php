@@ -23,11 +23,11 @@ class SellStockType extends AbstractType
             ])
             ->add('sell_date', DateType::class)
             ->add('shares', NumberType::class)
-            ->add('paywith', ChoiceType::class, [
-                'choices' => [
-                    'USD' => 1,
-                    'CAD' => 2
-                ]
+            ->add('sell_currency', ChoiceType::class, [
+                'choices'  => [
+                    'CAD' => 1,
+                    'USD' => 2,
+                ],
             ])
             ->add('price', NumberType::class)
             ->add('submit', SubmitType::class, [

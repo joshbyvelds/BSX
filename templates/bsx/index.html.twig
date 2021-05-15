@@ -5,7 +5,7 @@
 {% block body %}
     <h1>BSX Homepage</h1>
 
-    <table class="table table-bordered">
+    <table class="table table-bordered table-responsive">
         <tr>
             <th>Name</th>
             <th>Ticker</th>
@@ -13,81 +13,49 @@
             <th>First Bought</th>
             <th>Last Bought</th>
             <th>Currency</th>
+            <th>Opening Price</th>
+            <th>Closing Price</th>
             <th>Current Price</th>
             <th>Average Price</th>
             <th>Stock Day Gain/Loss</th>
             <th>Stock Gain/Loss (average)</th>
-            <th>Potintal Gain/Loss</th>
-            <th>Potintal Gain/Loss /w Dividends</th>
+            <th>Potintal Gain/Loss (C/U)</th>
             <th>Total Dividends</th>
             <th>Last Sold</th>
             <th>Sold</th>
-            <th>Profit</th>
+            <th>Profit C/U</th>
+            <th>Profit /w Dividends</th>
             <th>Type</th>
         </tr>
 
-        <tr>
-            <td>Minto</td>
-            <td>MI.UN:CA</td>
-            <td>1</td>
-            <td>03/04/2021</td>
-            <td>03/04/2021</td>
-            <td>CAD</td>
-            <td>21.50</td>
-            <td>21.50</td>
-            <td>Current Price  - Average Price</td>
-            <td>21.50 - 18.98</td>
-            <td>$0</td>
-            <td>18.98 - 21.50 - 20 + 0</td>
-            <td>Never</td>
-            <td>$0</td>
-            <td>$0</td>
-            <td>$0</td>
-            <td>Red</td>
-        </tr>
-
-        <tr>
-            <td>Coca-Cola</td>
-            <td>KO:US</td>
-            <td>1</td>
-            <td>03/08/21</td>
-            <td>03/08/21</td>
-            <td>USD</td>
-            <td>54.96</td>
-            <td>51.5</td>
-            <td>+3.46</td>
-            <td>+0.13</td>
-            <td>0.5</td>
-            <td>18.98 - 21.50 - 20 + 0</td>
-            <td>Never</td>
-            <td>$0</td>
-            <td>$0</td>
-            <td>$0</td>
-            <td>Blue</td>
-        </tr>
-
         {% for stock in stocks %}
-            <tr>
+            {% set pd = stock.profitCan + stock.dividends %}
+            <tr data-id="{{ stock.id }}">
                 <td>{{ stock.name }}</td>
                 <td>{{ stock.ticker }}</td>
-                <td>{{ stock.shares }}</td>
+                <td data-shares="{{ stock.id }}">{{ stock.shares }}</td>
                 <td>{{ stock.firstBought|date("m/d/Y") }}</td>
                 <td>{{ stock.lastBought|date("m/d/Y") }}</td>
-                <td>{{ stock.currency }}</td>
-                <td>$</td>
-                <td>${{ stock.averagePrice }}</td>
-                <td>Day G/L</td>
-                <td>Stock G/L</td>
-                <td>Total G/L</td>
-                <td>Total G/L /w D</td>
+                <td data-currency="{{ stock.id }}">{{ stock.currency }}</td>
+                <td data-opening="{{ stock.id }}">1.00</td>
+                <td>0.00</td>
+                <td><input type="text" class="current_price" placeholder="$0.00" data-id="{{ stock.id }}"></td>
+                <td data-average="{{ stock.id }}">${{ stock.averagePrice }}</td>
+                <td data-day-gl="{{ stock.id }}">Day G/L</td>
+                <td data-ave-gl="{{ stock.id }}">Stock G/L</td>
+                <td data-p-gl="{{ stock.id }}">Total G/L</td>
                 <td>{{ stock.dividends }}</td>
                 <td>{{ stock.lastSold|date("m/d/Y") }}</td>
                 <td>${{ stock.sold }}</td>
-                <td>${{ stock.profit }}</td>
+                <td data-profit="{{stock.id}}">${{ stock.profitCan }}/${{ stock.profitUsd }}</td>
+                <td data-pd-gl="{{ stock.id }}">{{ pd }}</td>
                 <td>{{ stock.type }}</td>
             </tr>
         {% endfor %}
     </table>
+    <a href="/add" class="btn btn-primary">ADD</a>
+    <a href="/buy" class="btn btn-primary">BUY</a>
+    <a href="/sell" class="btn btn-primary">SELL</a>
 
     <article>
         <h2>Notes on Project</h2>
