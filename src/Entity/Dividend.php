@@ -18,9 +18,10 @@ class Dividend
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\ManyToOne(targetEntity=Stock::class, inversedBy="dividends")
+     * @ORM\JoinColumn(nullable=false)
      */
-    private $ticker;
+    private $stock;
 
     /**
      * @ORM\Column(type="date")
@@ -32,24 +33,19 @@ class Dividend
      */
     private $amount;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $currency;
-
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getTicker(): ?string
+    public function getStock(): ?Stock
     {
-        return $this->ticker;
+        return $this->stock;
     }
 
-    public function setTicker(string $ticker): self
+    public function setStock(?Stock $stock): self
     {
-        $this->ticker = $ticker;
+        $this->stock = $stock;
 
         return $this;
     }
@@ -74,18 +70,6 @@ class Dividend
     public function setAmount(float $amount): self
     {
         $this->amount = $amount;
-
-        return $this;
-    }
-
-    public function getCurrency(): ?int
-    {
-        return $this->currency;
-    }
-
-    public function setCurrency(int $currency): self
-    {
-        $this->currency = $currency;
 
         return $this;
     }

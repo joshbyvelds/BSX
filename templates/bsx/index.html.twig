@@ -19,17 +19,35 @@
             <th>Average Price</th>
             <th>Stock Day Gain/Loss</th>
             <th>Stock Gain/Loss (average)</th>
-            <th>Potintal Gain/Loss (C/U)</th>
+            <th>Potintal Gain/Loss (CDN/USD)</th>
             <th>Total Dividends</th>
             <th>Last Sold</th>
             <th>Sold</th>
-            <th>Profit C/U</th>
+            <th>Profit CDN/USD</th>
             <th>Profit /w Dividends</th>
             <th>Type</th>
         </tr>
 
+        {% set sold_total = 0 %}
+        {% set profit_cdn_total = 0 %}
+        {% set profit_usd_total = 0 %}
+        {% set profit_dividend_total = 0 %}
+        {% set dividend_total = 0 %}
+
         {% for stock in stocks %}
-            {% set pd = stock.profitCan + stock.dividends %}
+            {% set stock_dividend_total = 0 %}
+            {% set sold_total = sold_total + stock.sold %}
+            {% set profit_cdn_total = profit_cdn_total + stock.profitCan %}
+            {% set profit_usd_total = profit_usd_total + stock.profitUsd %}
+
+            {% for dividend_payment in stock.dividends %}
+                 {% set stock_dividend_total = stock_dividend_total + dividend_payment.amount %}
+                 {% set dividend_total = dividend_total + dividend_payment.amount %}
+            {% endfor %}
+
+            {% set pd = stock.profitCan + stock_dividend_total %}
+            {% set profit_dividend_total = profit_dividend_total + pd %}
+            
             <tr data-id="{{ stock.id }}">
                 <td>{{ stock.name }}</td>
                 <td>{{ stock.ticker }}</td>
@@ -37,25 +55,39 @@
                 <td>{{ stock.firstBought|date("m/d/Y") }}</td>
                 <td>{{ stock.lastBought|date("m/d/Y") }}</td>
                 <td data-currency="{{ stock.id }}">{{ stock.currency }}</td>
-                <td data-opening="{{ stock.id }}">1.00</td>
-                <td>0.00</td>
+                <td data-opening="{{ stock.id }}">${{ stock.openingPrice|number_format(2) }}</td>
+                <td>${{ stock.closingPrice|number_format(2) }}</td>
                 <td><input type="text" class="current_price" placeholder="$0.00" data-id="{{ stock.id }}"></td>
-                <td data-average="{{ stock.id }}">${{ stock.averagePrice }}</td>
+                <td data-average="{{ stock.id }}">${{ stock.averagePrice|number_format(2) }}</td>
                 <td data-day-gl="{{ stock.id }}">Day G/L</td>
                 <td data-ave-gl="{{ stock.id }}">Stock G/L</td>
                 <td data-p-gl="{{ stock.id }}">Total G/L</td>
-                <td>{{ stock.dividends }}</td>
+                <td>${{stock_dividend_total}}</td>
                 <td>{{ stock.lastSold|date("m/d/Y") }}</td>
-                <td>${{ stock.sold }}</td>
-                <td data-profit="{{stock.id}}">${{ stock.profitCan }}/${{ stock.profitUsd }}</td>
-                <td data-pd-gl="{{ stock.id }}">{{ pd }}</td>
+                <td>${{ stock.sold|number_format(2) }}</td>
+                <td data-profit="{{stock.id}}">${{ stock.profitCan|number_format(2) }}/${{ stock.profitUsd|number_format(2) }}</td>
+                <td data-pd-gl="{{ stock.id }}">${{ pd|number_format(2) }}</td>
                 <td>{{ stock.type }}</td>
             </tr>
         {% endfor %}
+
+            <tr>
+                <td colspan="10">TOTAL</td>
+                <td>$0.00</td>
+                <td>$0.00</td>
+                <td>$0.00/$0.00</td>
+                <td>${{ dividend_total }}</td>
+                <td>N/A</td>
+                <td>${{ sold_total|number_format(2) }}</td>
+                <td>${{ profit_cdn_total|number_format(2) }}/${{ profit_usd_total|number_format(2) }}</td>
+                <td>${{ profit_dividend_total }}</td>
+                <td>N/A</td>
+            </tr>
     </table>
     <a href="/add" class="btn btn-primary">ADD</a>
     <a href="/buy" class="btn btn-primary">BUY</a>
     <a href="/sell" class="btn btn-primary">SELL</a>
+    <a href="/updatestockinfo" class="btn btn-warning">UPDATE STOCK INFO FROM API</a>
 
     <article>
         <h2>Notes on Project</h2>

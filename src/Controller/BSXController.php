@@ -12,6 +12,7 @@ use App\Entity\Dividend;
 use App\Form\AddStockType;
 use App\Form\BuyStockType;
 use App\Form\SellStockType;
+use App\Form\DividendType;
 use App\Repository\StockRepository;
 
 class BSXController extends AbstractController
@@ -21,50 +22,13 @@ class BSXController extends AbstractController
     private $USDtoCANBuy = 1.2286;
     private $CANtoUSDSell = 0.8139;
     private $USDtoCANSell = 1.1936;
+    
     /**
      * @Route("/", name="index")
      */
     public function index(StockRepository $stocksRepo): Response
     {
-        
         $stocks = $stocksRepo->findAll();
-
-        
-
-        // forEach($stocks as $stock){
-        //     $stock->set = 789; 
-        //     $stock['last_bought'] = 123; 
-        // }
-
-        // dump($stocks);
-        
-        /*
-        
-        // Set API access key 
-        $queryString = http_build_query([ 
-            'access_key' => '3d5f3feeb237151c7213b3d97ab15237', 
-            'symbols' => 'AAPL',
-        ]); 
-        
-        // API URL with query string 
-        $apiURL = sprintf('%s?%s', 'http://api.marketstack.com/v1/eod/latest', $queryString); 
-        
-        // Initialize cURL 
-        $ch = curl_init(); 
-        
-        // Set URL and other appropriate options 
-        curl_setopt($ch, CURLOPT_URL, $apiURL); 
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
-        
-        // Execute and get response from API 
-        $api_response = curl_exec($ch); 
-        
-        // Close cURL 
-        curl_close($ch);
-
-        var_dump($api_response);
-
-        */
 
         return $this->render('bsx/index.html.twig', [
             'controller_name' => 'BSXController',
@@ -73,12 +37,67 @@ class BSXController extends AbstractController
     }
 
     /**
+     * @Route("/updatestockinfo", name="update_stock_info")
+     */
+    public function updateStockInfo(StockRepository $stocksRepo): Response
+    {
+        $updateAPIData = false;
+        $stocks = $stocksRepo->findAll();
+
+        forEach($stocks as $stock){
+            $tickers[] = $stock->getTicker();
+        }
+
+        if ($updateAPIData) {
+
+            ///*
+            // Set API access key 
+            $queryString = http_build_query([ 
+                'access_key' => '3d5f3feeb237151c7213b3d97ab15237', 
+                'symbols' => implode(",", $tickers),
+            ]); 
+            
+            // API URL with query string 
+            $apiURL = sprintf('%s?%s', 'http://api.marketstack.com/v1/eod/latest', $queryString); 
+            
+            // Initialize cURL 
+            $ch = curl_init(); 
+            
+            // Set URL and other appropriate options 
+            curl_setopt($ch, CURLOPT_URL, $apiURL); 
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+            
+            // Execute and get response from API 
+            $api_response = curl_exec($ch); 
+            
+            // Close cURL 
+            curl_close($ch);
+            
+            $MarketStackData = json_decode($api_response, true);
+            $stockIndex = 0;
+            //*/
+
+            forEach($stocks as $stock){
+                $stock->setOpeningPrice($MarketStackData['data'][$stockIndex]['open']);
+                $stock->setClosingPrice($MarketStackData['data'][$stockIndex]['close']);
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($stock);
+                $em->flush();
+                $stockIndex++;
+            }
+        }
+
+        return $this->redirectToRoute('index');
+    }
+
+    /**
      * @Route("/add", name="add")
      */
     public function add(Request $request): Response
     {
         $stock = new Stock();
-        $stock->setDividends(0);
+        $stock->setOpeningPrice(0);
+        $stock->setClosingPrice(0);
         $stock->setSold(0);
         
         $form = $this->createForm(AddStockType::class, $stock);
@@ -303,6 +322,8 @@ class BSXController extends AbstractController
             $em = $this->getDoctrine()->getManager();
             $em->persist($dividend);
             $em->flush();
+
+            //return $this->redirectToRoute('index');
         }
 
         return $this->render('bsx/forms/dividend.html.twig', [

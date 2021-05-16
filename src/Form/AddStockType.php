@@ -20,7 +20,14 @@ class AddStockType extends AbstractType
             ->add('first_bought')
             ->add('last_bought')
             ->add('average_price')
-            ->add('type')
+            ->add('type', ChoiceType::class, [
+                'choices'  => [
+                    'Blue Chip Joint' => 1,
+                    'Blue Chip Ind' => 2,
+                    'Red Chip Joint' => 3,
+                    'Red Chip Ind' => 4,
+                ],
+            ])
             ->add('buy_currency', ChoiceType::class, [
                 'choices'  => [
                     'CAD' => 1,

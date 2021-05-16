@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\StockRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -50,11 +52,6 @@ class Stock
     /**
      * @ORM\Column(type="float")
      */
-    private $dividends;
-
-    /**
-     * @ORM\Column(type="float")
-     */
     private $sold;
 
     /**
@@ -86,6 +83,26 @@ class Stock
      * @ORM\Column(type="float")
      */
     private $profit_usd;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Dividend::class, mappedBy="stock")
+     */
+    private $dividends;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $opening_price;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $closing_price;
+
+    public function __construct()
+    {
+        $this->dividends = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -172,18 +189,6 @@ class Stock
     public function setAveragePrice(float $average_price): self
     {
         $this->average_price = $average_price;
-
-        return $this;
-    }
-
-    public function getDividends(): ?float
-    {
-        return $this->dividends;
-    }
-
-    public function setDividends(float $dividends): self
-    {
-        $this->dividends = $dividends;
 
         return $this;
     }
@@ -289,6 +294,60 @@ class Stock
     public function addProfitUsd(float $profit_usd): self
     {
         $this->profit_usd += $profit_usd;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Dividend[]
+     */
+    public function getDividends(): Collection
+    {
+        return $this->dividends;
+    }
+
+    public function addDividend(Dividend $dividend): self
+    {
+        if (!$this->dividends->contains($dividend)) {
+            $this->dividends[] = $dividend;
+            $dividend->setStock($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDividend(Dividend $dividend): self
+    {
+        if ($this->dividends->removeElement($dividend)) {
+            // set the owning side to null (unless already changed)
+            if ($dividend->getStock() === $this) {
+                $dividend->setStock(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getOpeningPrice(): ?float
+    {
+        return $this->opening_price;
+    }
+
+    public function setOpeningPrice(float $opening_price): self
+    {
+        $this->opening_price = $opening_price;
+
+        return $this;
+    }
+
+    public function getClosingPrice(): ?float
+    {
+        return $this->closing_price;
+    }
+
+    public function setClosingPrice(float $closing_price): self
+    {
+        $this->closing_price = $closing_price;
 
         return $this;
     }

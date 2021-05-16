@@ -13,11 +13,11 @@ $(function(){
 
         $("[data-day-gl=" + id + "]").html((parseFloat($(this).val()) - day).toFixed(2));
         $("[data-ave-gl=" + id + "]").html((parseFloat($(this).val()) - average).toFixed(2));
+        
         if(currency === 1){
             $("[data-p-gl=" + id + "]").html((((parseFloat($(this).val()) - average) * shares) - trading_fee).toFixed(2) + "/" + ((((parseFloat($(this).val()) - average) * shares) - trading_fee) * CANtoUSD).toFixed(2));
         }else{
             $("[data-p-gl=" + id + "]").html(((((parseFloat($(this).val()) - average) * shares) - trading_fee) * USDtoCAN ).toFixed(2) + "/" + (((parseFloat($(this).val()) - average) * shares) - trading_fee).toFixed(2));
         }
-        $("[data-pd-gl=" + id + "]").html("ABC");
     });
 });
