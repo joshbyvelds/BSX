@@ -35,6 +35,7 @@
         {% set dividend_total = 0 %}
 
         {% for stock in stocks %}
+            {% set current_price = stock.closingPrice|number_format(2) %}
             {% set stock_dividend_total = 0 %}
             {% set sold_total = sold_total + stock.sold %}
             {% set profit_cdn_total = profit_cdn_total + stock.profitCan %}
@@ -47,6 +48,10 @@
 
             {% set pd = stock.profitCan + stock_dividend_total %}
             {% set profit_dividend_total = profit_dividend_total + pd %}
+
+            {% if market_open %}
+                {% set current_price = stock.openingPrice|number_format(2) %}
+            {% endif %}
             
             <tr data-id="{{ stock.id }}">
                 <td>{{ stock.name }}</td>
@@ -57,7 +62,7 @@
                 <td data-currency="{{ stock.id }}">{{ stock.currency }}</td>
                 <td data-opening="{{ stock.id }}">${{ stock.openingPrice|number_format(2) }}</td>
                 <td>${{ stock.closingPrice|number_format(2) }}</td>
-                <td><input type="text" class="current_price" placeholder="$0.00" data-id="{{ stock.id }}"></td>
+                <td><input type="text" class="current_price" placeholder="$0.00" data-id="{{ stock.id }}" value='{{ current_price }}'></td>
                 <td data-average="{{ stock.id }}">${{ stock.averagePrice|number_format(2) }}</td>
                 <td data-day-gl="{{ stock.id }}">Day G/L</td>
                 <td data-ave-gl="{{ stock.id }}">Stock G/L</td>
@@ -95,8 +100,8 @@
         <h3>What should this project do</h3>
         <p>
             <ul>
-                <li>View what stocks I own, how much of each stock,what the current stock price is, and how much I would gain/loss if I sold it all (with and without dividends)</li>
-                <li>Current Gain/Loss for all of my stocks combined (with and without dividends)</li>
+                <li>View what stocks I own, how much of each stock,what the current stock price is, and how much I would gain/loss if I sold it all (with and without dividends) ✔️</li>
+                <li>Current Gain/Loss for all of my stocks combined (with and without dividends) ✔️</li>
                 <li>Dividend Payments for each stock I own and how much I earned. Each Payment and Total</li>
                 <li>Dividend Total Amounts for Each month</li>
             </ul>
@@ -107,7 +112,7 @@
         <h2>TODO LIST</h2>
         <ul>
             <li>Create Dividened Entity, Page and Form</li>
-            <li>Get Total Dividened Payment amount and add to homepage stock table column</li>
+            <li>Get Total Dividened Payment amount and add to homepage stock table column ✔️</li>
         </ul>
     </article>
 {% endblock %}

@@ -29,10 +29,37 @@ class BSXController extends AbstractController
     public function index(StockRepository $stocksRepo): Response
     {
         $stocks = $stocksRepo->findAll();
+        $market_open = false;
+
+        date_default_timezone_set('America/New_York');
+
+        $currentTime = new \DateTime();
+        $opening_bell = \DateTime::createFromFormat('h:i a', "9:30 am");
+        $closing_bell = \DateTime::createFromFormat('h:i a', "4:00 pm");
+
+        $data = [
+            "CT" => $currentTime,
+            "OB" => $opening_bell,
+            "CB" => $closing_bell
+        ];
+
+        //dump($data);
+
+        if ($currentTime > $opening_bell && $currentTime < $closing_bell){
+            $market_open = true;
+        }
+
+        $dayoftheweek = date("l", $currentTime->getTimestamp());
+        $dayoftheweek = strtolower($dayoftheweek);
+        
+        if($dayoftheweek == "saturday" || $dayoftheweek == "sunday") {
+            $market_open = false;
+        }
 
         return $this->render('bsx/index.html.twig', [
             'controller_name' => 'BSXController',
             'stocks' => $stocks,
+            'market_open' => $market_open,
         ]);
     }
 
