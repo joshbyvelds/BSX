@@ -4,8 +4,6 @@ $(function(){
     const USDtoCAN = 1.1936;
     var gl_total_day = 0;
     var gl_total_ave = 0;
-    var gl_total_p_cdn = 0;
-    var gl_total_p_usd = 0;
 
     $CP = $("input.current_price");
 
@@ -36,15 +34,18 @@ $(function(){
     }
 
     function updateGLTotals(){
-        $(".gl_day").each(function(){
+        var gl_total_p_cdn = 0;
+        var gl_total_p_usd = 0;
+
+        $(".gl_day:not(.no_total)").each(function(){
             gl_total_day += parseFloat($(this).html().replace("$", ""));
         });
 
-        $(".gl_ave").each(function(){
+        $(".gl_ave:not(.no_total)").each(function(){
             gl_total_ave += parseFloat($(this).html().replace("$", ""));
         });
 
-        $(".gl_p").each(function(){
+        $(".gl_p:not(.no_total)").each(function(){
             var amounts = $(this).html().replace("$", "").split("/");
             console.log(amounts);
             gl_total_p_cdn += parseFloat(amounts[0].replace("$", ""));

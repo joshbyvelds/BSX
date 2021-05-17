@@ -64,9 +64,9 @@
                 <td>${{ stock.closingPrice|number_format(2) }}</td>
                 <td><input type="text" class="current_price" placeholder="$0.00" data-id="{{ stock.id }}" value='{{ current_price }}'></td>
                 <td data-average="{{ stock.id }}">${{ stock.averagePrice|number_format(2) }}</td>
-                <td data-day-gl="{{ stock.id }}" class="gl_day">$0.00</td>
-                <td data-ave-gl="{{ stock.id }}" class="gl_ave">$0.00</td>
-                <td data-p-gl="{{ stock.id }}" class="gl_p">$0.00/$0.00</td>
+                <td data-day-gl="{{ stock.id }}" class="gl_day {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
+                <td data-ave-gl="{{ stock.id }}" class="gl_ave {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
+                <td data-p-gl="{{ stock.id }}" class="gl_p {%if stock.shares == 0 %}no_total{% endif %}" >$0.00/$0.00</td>
                 <td>${{stock_dividend_total}}</td>
                 <td>{{ stock.lastSold|date("m/d/Y") }}</td>
                 <td>${{ stock.sold|number_format(2) }}</td>
