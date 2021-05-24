@@ -14,6 +14,7 @@ use App\Form\BuyStockType;
 use App\Form\SellStockType;
 use App\Form\DividendType;
 use App\Repository\StockRepository;
+use App\Repository\DividendRepository;
 
 class BSXController extends AbstractController
 {
@@ -68,7 +69,7 @@ class BSXController extends AbstractController
      */
     public function updateStockInfo(StockRepository $stocksRepo): Response
     {
-        $updateAPIData = false;
+        $updateAPIData = true; // Use this a lock..
         $stocks = $stocksRepo->findAll();
 
         forEach($stocks as $stock){
@@ -314,29 +315,19 @@ class BSXController extends AbstractController
     }
 
     /**
-     * @Route("/dividend", name="dividend")
+     * @Route("/dividends", name="dividend")
      */
-    public function dividend(Request $request): Response
+    public function dividend(DividendRepository $dividendRepo): Response
     {
-        $dividend = new Dividend();
-        $form = $this->createForm(DividendType::class, $dividend);
-        
-        $form->handleRequest($request);
-
-        if($form->isSubmitted()){
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($dividend);
-            $em->flush();
-        }
-
-        return $this->render('bsx/dividend.html.twig', [
+        $dividends = $dividendRepo->findAll();
+        return $this->render('bsx/dividends.html.twig', [
+            'dividends' => $dividends,
             'controller_name' => 'BSXController',
-            'form' => $form->createView(),
         ]);
     }
 
     /**
-     * @Route("/dividend/add", name="add_dividend")
+     * @Route("/dividends/add", name="add_dividend")
      */
     public function addDividend(Request $request): Response
     {

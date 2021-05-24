@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Byvelds Stock Exchange{% endblock %}
+
+{% block body %}
+    <h1>Dividends</h1>
+    <table class="table table-bordered table-responsive">
+        <tr>
+            <th>Date</th>
+            <th>Stock</th>
+            <th>Amount</th>
+            <th>Total (stock)</th>
+            <th>Total (all)</th>
+        </tr>
+
+        {% set total = 0 %}
+        {% set total_stock = [] %}
+
+        {% for dividend_payment in dividends %}
+            {% set total = total + dividend_payment.amount %}
+            {% if total_stock['stock_'~dividend_payment.stock.id] is defined %}
+                {% set total_stock = total_stock|merge({('stock_'~dividend_payment.stock.id):total_stock['stock_'~dividend_payment.stock.id] + dividend_payment.amount}) %}
+            {% else %}
+                {% set total_stock = total_stock|merge({('stock_'~dividend_payment.stock.id):dividend_payment.amount}) %}    
+            {% endif %}
+            <tr>
+                <td>{{ dividend_payment.paymentDate|date("m/d/Y") }}</td>
+                <td>{{ dividend_payment.stock.name }}</td>
+                <td>{{ dividend_payment.amount|number_format(2) }}</td>
+                <td>${{ total_stock['stock_'~dividend_payment.stock.id]|number_format(2) }}</td>
+                <td>${{ total|number_format(2) }}</td>
+            </tr>
+        {% endfor %}
+
+        <tr>
+            <td colspan="2">TOTAL</td>
+            <td colspan="3">${{total|number_format(2)}}</td>
+        </tr>
+
+    </table>        
+
+{% endblock %}
