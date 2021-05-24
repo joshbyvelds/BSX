@@ -327,6 +327,18 @@ class BSXController extends AbstractController
     }
 
     /**
+     * @Route("/dividends/month", name="dividend_month")
+     */
+    public function dividendMonth(DividendRepository $dividendRepo): Response
+    {
+        $dividends = $dividendRepo->findAll();
+        return $this->render('bsx/dividends_month.html.twig', [
+            'dividends' => $dividends,
+            'controller_name' => 'BSXController',
+        ]);
+    }
+
+    /**
      * @Route("/dividends/add", name="add_dividend")
      */
     public function addDividend(Request $request): Response
