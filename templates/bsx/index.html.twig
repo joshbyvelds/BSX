@@ -20,6 +20,7 @@
             <th>Stock Day Gain/Loss</th>
             <th>Stock Gain/Loss (average)</th>
             <th>Potintal Gain/Loss (CDN/USD)</th>
+            <th>Potintal Profit (CDN)</th>
             <th>Total Dividends</th>
             <th>Last Sold</th>
             <th>Sold</th>
@@ -35,6 +36,7 @@
         {% set dividend_total = 0 %}
 
         {% for stock in stocks %}
+            
             {% set current_price = stock.closingPrice|number_format(2) %}
             {% set stock_dividend_total = 0 %}
             {% set sold_total = sold_total + stock.sold %}
@@ -67,7 +69,8 @@
                 <td data-day-gl="{{ stock.id }}" class="gl_day {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
                 <td data-ave-gl="{{ stock.id }}" class="gl_ave {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
                 <td data-p-gl="{{ stock.id }}" class="gl_p {%if stock.shares == 0 %}no_total{% endif %}" >$0.00/$0.00</td>
-                <td>${{stock_dividend_total}}</td>
+                <td data-pp="{{ stock.id }}" class="pp {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
+                <td data-div="{{stock.id}}">${{stock_dividend_total}}</td>
                 <td>{{ stock.lastSold|date("m/d/Y") }}</td>
                 <td>${{ stock.sold|number_format(2) }}</td>
                 <td data-profit="{{stock.id}}">${{ stock.profitCan|number_format(2) }}/${{ stock.profitUsd|number_format(2) }}</td>
@@ -81,6 +84,7 @@
                 <td id="total_gl_day">$0.00</td>
                 <td id="total_gl_ave">$0.00</td>
                 <td id="total_gl_p">$0.00/$0.00</td>
+                <td id="total_pp">$0.00</td>
                 <td>${{ dividend_total }}</td>
                 <td>N/A</td>
                 <td>${{ sold_total|number_format(2) }}</td>

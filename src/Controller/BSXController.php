@@ -115,7 +115,7 @@ class BSXController extends AbstractController
             }
         }
 
-        return $this->redirectToRoute('index');
+       return $this->redirectToRoute('index');
     }
 
     /**
