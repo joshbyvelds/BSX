@@ -9,12 +9,15 @@ use Symfony\Component\Routing\Annotation\Route;
 
 use App\Entity\Stock;
 use App\Entity\Dividend;
+use App\Entity\TenPlanWeek;
 use App\Form\AddStockType;
 use App\Form\BuyStockType;
 use App\Form\SellStockType;
 use App\Form\DividendType;
+use App\Form\TenPlanWeekType;
 use App\Repository\StockRepository;
 use App\Repository\DividendRepository;
+use App\Repository\TenPlanWeekRepository;
 
 class BSXController extends AbstractController
 {
@@ -311,6 +314,42 @@ class BSXController extends AbstractController
     {
         return $this->render('bsx/stock.html.twig', [
             'controller_name' => 'BSXController',
+        ]);
+    }
+
+    /**
+     * @Route("/tenplan", name="ten")
+     */
+    public function tenPlan(TenPlanWeekRepository $tenplanRepo): Response
+    {
+        $tenplans = $tenplanRepo->findAll();
+        
+        return $this->render('bsx/tenplan.html.twig', [
+            'weeks' => $tenplans
+        ]);
+    }
+
+    /**
+     * @Route("/tenplan/add", name="ten_add")
+     */
+    public function tenPlanAdd(Request $request): Response
+    {
+        $week = new TenPlanWeek();
+        $form = $this->createForm(TenPlanWeekType::class, $week);
+        
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()){
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($week);
+            $em->flush();
+
+            return $this->redirectToRoute('ten');
+        }
+
+        return $this->render('bsx/forms/tenplan.html.twig', [
+            'controller_name' => 'BSXController',
+            'form' => $form->createView(),
         ]);
     }
 

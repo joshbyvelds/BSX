@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Ten Percent Plan Status{% endblock %}
+
+{% block body %}
+    <h1>Ten Percent Plan Status</h1>
+
+    <table class="table table-bordered table-responsive">
+        <tr>
+            <th>Week</th>
+            <th>Date</th>
+            <th>Increase Added</th>
+            <th>Increase Target</th>
+            <th>Total (Invest/Savings)</th>
+            <th>Total Target (Invest/Savings)</th>
+            <th>Percent Increase</th>
+        </tr>
+
+        {% set total = 1000 %}
+        {% set savings = 0 %}
+        {% set target = 0 %}
+        {% set savings_target = 0 %}
+        {% for week in weeks %}
+
+        <tr>
+            {% set target_week = total * 0.05 %}
+            {% set target = total + target_week %}
+            {% set savings_target = savings + target_week %}
+            {% set percent = week.increase/total %}
+            {% set week_increase = week.increase / 2 %}
+            {% set total = total + week_increase %}
+            {% set savings = savings + week_increase %}
+
+            <td>{{ week.week }} </td>
+            <td>{{ week.enddate|date("m/d/Y") }}</td>
+            <td>${{ week_increase|number_format(2) }}</td>
+            <td>${{ target_week|number_format(2) }}</td>
+            <td>${{ total|number_format(2) }} / ${{savings|number_format(2)}}</td>
+            <td>${{ target|number_format(2) }} / ${{ savings_target|number_format(2) }}</td>
+            <td class="{% if percent > 0.20 %}hellyeah{% endif %}{% if percent < 0.10 %}fail{% endif %}">{{ percent|number_format(4) * 100 }}%</th>
+        </tr>
+        {% endfor %}
+        
+        <tr>
+            <td>1</td>
+            <td>March 13, 2012</td>
+            <td>$50</td>
+            <td>$50</td>
+            <td>$1050 / $50</td>
+            <td>$1050 / $50</td>
+            <td>10%</th>
+        </tr>
+
+        <tr>
+            <td>2</td>
+            <td>March 20, 2012</td>
+            <td>$42</td>
+            <td>$52</td>
+            <td>$1092 / $92</td>
+            <td>$1102.50 / $102</td>
+            <td class="fail" style="color:red;">8%</th>
+        </tr>
+
+        <tr>
+            <td>3</td>
+            <td>March 27, 2012</td>
+            <td>$115.76</td>
+            <td>$55.12</td>
+            <td>$1218.26 / $207.76</td>
+            <td>$1157.62 / $157.12</td>
+            <td class="hellyeah" style="color:green;">21%</th>
+        </tr>
+    </table>
+    <a href="/tenplan/add" class="btn btn-primary">Add Week</a>      
+    
+{% endblock %}    
