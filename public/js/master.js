@@ -23,16 +23,17 @@ $(function(){
         let shares = $("[data-shares=" + id + "]").html();
         let currency = parseInt($("[data-currency=" + id + "]").html());
         var profit = $("[data-profit=" + id + "]").html().replace("$", "").split("/");
+        let buys = $("[data-p-gl=" + id + "]").attr("data-buys");
 
-        console.log(profit);
+        console.log(buys);
 
         $("[data-day-gl=" + id + "]").html("$" + (parseFloat(current) - day).toFixed(2));
         $("[data-ave-gl=" + id + "]").html("$" + (parseFloat(current) - average).toFixed(2));
         
         if(currency === 1){
-            $("[data-p-gl=" + id + "]").html("$" + (((parseFloat(current) - average) * shares) - trading_fee).toFixed(2) + "/" + ((((parseFloat(current) - average) * shares) - trading_fee) * CANtoUSD).toFixed(2));
+            $("[data-p-gl=" + id + "]").html("$" + (((parseFloat(current) - average) * shares) - trading_fee - (trading_fee * buys)).toFixed(2) + "/" + ((((parseFloat(current) - average) * shares) - trading_fee - (trading_fee * buys)) * CANtoUSD).toFixed(2));
         }else{
-            $("[data-p-gl=" + id + "]").html("$" + ((((parseFloat(current) - average) * shares) - trading_fee) * USDtoCAN ).toFixed(2) + "/" + (((parseFloat(current) - average) * shares) - trading_fee).toFixed(2));
+            $("[data-p-gl=" + id + "]").html("$" + ((((parseFloat(current) - average) * shares) - trading_fee - (trading_fee * buys)) * USDtoCAN ).toFixed(2) + "/" + (((parseFloat(current) - average) * shares - (trading_fee * buys)) - trading_fee).toFixed(2));
         }
 
         $("[data-pp=" + id + "]").html(parseFloat(profit[1]));

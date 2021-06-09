@@ -99,6 +99,11 @@ class Stock
      */
     private $closing_price;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $buys;
+
     public function __construct()
     {
         $this->dividends = new ArrayCollection();
@@ -348,6 +353,18 @@ class Stock
     public function setClosingPrice(float $closing_price): self
     {
         $this->closing_price = $closing_price;
+
+        return $this;
+    }
+
+    public function getBuys(): ?int
+    {
+        return $this->buys;
+    }
+
+    public function setBuys(int $buys): self
+    {
+        $this->buys = $buys;
 
         return $this;
     }

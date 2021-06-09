@@ -68,7 +68,7 @@
                 <td data-average="{{ stock.id }}">${{ stock.averagePrice|number_format(2) }}</td>
                 <td data-day-gl="{{ stock.id }}" class="gl_day {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
                 <td data-ave-gl="{{ stock.id }}" class="gl_ave {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
-                <td data-p-gl="{{ stock.id }}" class="gl_p {%if stock.shares == 0 %}no_total{% endif %}" >$0.00/$0.00</td>
+                <td data-p-gl="{{ stock.id }}" data-buys="{{ stock.buys }}" class="gl_p {%if stock.shares == 0 %}no_total{% endif %}" >$0.00/$0.00</td>
                 <td data-pp="{{ stock.id }}" class="pp {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
                 <td data-div="{{stock.id}}">${{stock_dividend_total}}</td>
                 <td>{{ stock.lastSold|date("m/d/Y") }}</td>
@@ -93,6 +93,7 @@
                 <td>N/A</td>
             </tr>
     </table>
+    <a href="/tenplan" class="btn btn-primary">TEN PERCENT PLAN</a>
     <a href="/dividends" class="btn btn-primary">DIVIDENDS</a>
     <a href="/add" class="btn btn-primary">ADD</a>
     <a href="/buy" class="btn btn-primary">BUY</a>

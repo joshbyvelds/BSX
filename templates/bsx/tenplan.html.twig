@@ -20,11 +20,18 @@
         {% set savings = 0 %}
         {% set target = 0 %}
         {% set savings_target = 0 %}
-        {% for week in weeks %}
+        {% set percent = 0.10 %}
 
+        {% for week in weeks %}
         <tr>
-            {% set target_week = total * 0.05 %}
-            {% set target = total + target_week %}
+            {% if percent < 0.999 %}
+                {% set target_week = total * 0.05 %}
+                {% set target = total + target_week %}
+            {% else %}
+                {% set target_week = target * 0.05 %}
+                {% set target = target + target_week %}
+            {% endif %}
+
             {% set savings_target = savings + target_week %}
             {% set percent = week.increase/total %}
             {% set week_increase = week.increase / 2 %}
@@ -40,37 +47,8 @@
             <td class="{% if percent > 0.20 %}hellyeah{% endif %}{% if percent < 0.10 %}fail{% endif %}">{{ percent|number_format(4) * 100 }}%</th>
         </tr>
         {% endfor %}
-        
-        <tr>
-            <td>1</td>
-            <td>March 13, 2012</td>
-            <td>$50</td>
-            <td>$50</td>
-            <td>$1050 / $50</td>
-            <td>$1050 / $50</td>
-            <td>10%</th>
-        </tr>
-
-        <tr>
-            <td>2</td>
-            <td>March 20, 2012</td>
-            <td>$42</td>
-            <td>$52</td>
-            <td>$1092 / $92</td>
-            <td>$1102.50 / $102</td>
-            <td class="fail" style="color:red;">8%</th>
-        </tr>
-
-        <tr>
-            <td>3</td>
-            <td>March 27, 2012</td>
-            <td>$115.76</td>
-            <td>$55.12</td>
-            <td>$1218.26 / $207.76</td>
-            <td>$1157.62 / $157.12</td>
-            <td class="hellyeah" style="color:green;">21%</th>
-        </tr>
     </table>
-    <a href="/tenplan/add" class="btn btn-primary">Add Week</a>      
+    <a href="/tenplan/add" class="btn btn-primary">ADD WEEK</a>
+    <a href="/" class="btn btn-primary">BACK TO MAIN</a>    
     
 {% endblock %}    
