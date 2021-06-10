@@ -5,6 +5,14 @@
 {% block body %}
     <h1>Byvelds Stock Exchange</h1>
 
+    <a href="/tenplan" class="btn btn-primary">TEN PERCENT PLAN</a>
+    <a href="/dividends" class="btn btn-primary">DIVIDENDS</a>
+    <a href="/add" class="btn btn-primary">ADD</a>
+    <a href="/buy" class="btn btn-primary">BUY</a>
+    <a href="/sell" class="btn btn-primary">SELL</a>
+    <a href="/updatestockinfo" class="btn btn-warning">UPDATE EOD STOCK INFO FROM API</a>
+
+    {% set oldStocks = [] %}
     <table class="table table-bordered table-responsive">
         <tr>
             <th>Name</th>
@@ -29,6 +37,10 @@
             <th>Type</th>
         </tr>
 
+        <tr>
+            <td colspan="22">CURRENT STOCKS</td>
+        </tr>
+
         {% set sold_total = 0 %}
         {% set profit_cdn_total = 0 %}
         {% set profit_usd_total = 0 %}
@@ -36,7 +48,78 @@
         {% set dividend_total = 0 %}
 
         {% for stock in stocks %}
-            
+            {% if stock.shares == 0 %}
+                {% set oldStocks = oldStocks|merge([stock]) %}
+            {% else %}
+                {% set current_price = stock.closingPrice|number_format(2) %}
+                {% set stock_dividend_total = 0 %}
+                {% set sold_total = sold_total + stock.sold %}
+                {% set profit_cdn_total = profit_cdn_total + stock.profitCan %}
+                {% set profit_usd_total = profit_usd_total + stock.profitUsd %}
+
+                {% for dividend_payment in stock.dividends %}
+                    {% set stock_dividend_total = stock_dividend_total + dividend_payment.amount %}
+                    {% set dividend_total = dividend_total + dividend_payment.amount %}
+                {% endfor %}
+
+                {% set pd = stock.profitCan + stock_dividend_total %}
+                {% set profit_dividend_total = profit_dividend_total + pd %}
+
+                {% if market_open %}
+                    {% set current_price = stock.openingPrice|number_format(2) %}
+                {% endif %}
+                
+                <tr data-id="{{ stock.id }}">
+                    <td>{{ stock.name }}</td>
+                    <td>{{ stock.ticker }}</td>
+                    <td data-shares="{{ stock.id }}">{{ stock.shares }}</td>
+                    <td>{{ stock.firstBought|date("m/d/Y") }}</td>
+                    <td>{{ stock.lastBought|date("m/d/Y") }}</td>
+                    <td data-currency="{{ stock.id }}">{{ stock.currency }}</td>
+                    <td data-opening="{{ stock.id }}">${{ stock.openingPrice|number_format(2) }}</td>
+                    <td>${{ stock.closingPrice|number_format(2) }}</td>
+                    <td><input type="text" class="current_price" placeholder="$0.00" data-id="{{ stock.id }}" value='{{ current_price }}'></td>
+                    <td data-average="{{ stock.id }}">${{ stock.averagePrice|number_format(2) }}</td>
+                    <td data-day-gl="{{ stock.id }}" class="gl_day {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
+                    <td data-ave-gl="{{ stock.id }}" class="gl_ave {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
+                    <td data-p-gl="{{ stock.id }}" data-buys="{{ stock.buys }}" class="gl_p {%if stock.shares == 0 %}no_total{% endif %}" >$0.00/$0.00</td>
+                    <td data-pp="{{ stock.id }}" class="pp {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
+                    <td data-div="{{stock.id}}">${{stock_dividend_total}}</td>
+                    <td>{{ stock.lastSold|date("m/d/Y") }}</td>
+                    <td>${{ stock.sold|number_format(2) }}</td>
+                    <td data-profit="{{stock.id}}">${{ stock.profitCan|number_format(2) }}/${{ stock.profitUsd|number_format(2) }}</td>
+                    <td data-pd-gl="{{ stock.id }}">${{ pd|number_format(2) }}</td>
+                    <td>{{ stock.type }}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+
+            <tr>
+                <td colspan="10">TOTAL</td>
+                <td id="total_gl_day">$0.00</td>
+                <td id="total_gl_ave">$0.00</td>
+                <td id="total_gl_p">$0.00/$0.00</td>
+                <td id="total_pp">$0.00</td>
+                <td>${{ dividend_total }}</td>
+                <td>N/A</td>
+                <td>${{ sold_total|number_format(2) }}</td>
+                <td>${{ profit_cdn_total|number_format(2) }}/${{ profit_usd_total|number_format(2) }}</td>
+                <td>${{ profit_dividend_total }}</td>
+                <td>N/A</td>
+            </tr>
+
+            <tr>
+                <td colspan="22">OLD STOCKS</td>
+            </tr>
+
+
+        {% set sold_total = 0 %}
+        {% set profit_cdn_total = 0 %}
+        {% set profit_usd_total = 0 %}
+        {% set profit_dividend_total = 0 %}
+        {% set dividend_total = 0 %}
+
+        {% for stock in oldStocks %}
             {% set current_price = stock.closingPrice|number_format(2) %}
             {% set stock_dividend_total = 0 %}
             {% set sold_total = sold_total + stock.sold %}
@@ -44,8 +127,8 @@
             {% set profit_usd_total = profit_usd_total + stock.profitUsd %}
 
             {% for dividend_payment in stock.dividends %}
-                 {% set stock_dividend_total = stock_dividend_total + dividend_payment.amount %}
-                 {% set dividend_total = dividend_total + dividend_payment.amount %}
+                {% set stock_dividend_total = stock_dividend_total + dividend_payment.amount %}
+                {% set dividend_total = dividend_total + dividend_payment.amount %}
             {% endfor %}
 
             {% set pd = stock.profitCan + stock_dividend_total %}
@@ -79,26 +162,20 @@
             </tr>
         {% endfor %}
 
-            <tr>
-                <td colspan="10">TOTAL</td>
-                <td id="total_gl_day">$0.00</td>
-                <td id="total_gl_ave">$0.00</td>
-                <td id="total_gl_p">$0.00/$0.00</td>
-                <td id="total_pp">$0.00</td>
-                <td>${{ dividend_total }}</td>
-                <td>N/A</td>
-                <td>${{ sold_total|number_format(2) }}</td>
-                <td>${{ profit_cdn_total|number_format(2) }}/${{ profit_usd_total|number_format(2) }}</td>
-                <td>${{ profit_dividend_total }}</td>
-                <td>N/A</td>
-            </tr>
+        <tr>
+            <td colspan="10">TOTAL</td>
+            <td id="total_gl_day">$0.00</td>
+            <td id="total_gl_ave">$0.00</td>
+            <td id="total_gl_p">$0.00/$0.00</td>
+            <td id="total_pp">$0.00</td>
+            <td>${{ dividend_total }}</td>
+            <td>N/A</td>
+            <td>${{ sold_total|number_format(2) }}</td>
+            <td>${{ profit_cdn_total|number_format(2) }}/${{ profit_usd_total|number_format(2) }}</td>
+            <td>${{ profit_dividend_total }}</td>
+            <td>N/A</td>
+        </tr>
     </table>
-    <a href="/tenplan" class="btn btn-primary">TEN PERCENT PLAN</a>
-    <a href="/dividends" class="btn btn-primary">DIVIDENDS</a>
-    <a href="/add" class="btn btn-primary">ADD</a>
-    <a href="/buy" class="btn btn-primary">BUY</a>
-    <a href="/sell" class="btn btn-primary">SELL</a>
-    <a href="/updatestockinfo" class="btn btn-warning">UPDATE STOCK INFO FROM API</a>
 
     <article>
         <h2>Notes on Project</h2>
