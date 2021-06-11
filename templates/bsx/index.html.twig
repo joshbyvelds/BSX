@@ -15,31 +15,29 @@
     {% set oldStocks = [] %}
     <table class="table table-bordered table-responsive">
         <tr>
+            <td colspan="22">CURRENT STOCKS</td>
+        </tr>
+        
+        <tr>
             <th></th>
             <th>Name</th>
             <th>Ticker</th>
-            <th>Amount</th>
             <th>First Bought</th>
             <th>Last Bought</th>
+            <th>Last Sold</th>
+            <th>Type</th>
             <th>Currency</th>
+            <th>Sold</th>
+            <th>Total Dividends</th>
+            <th>Profit CDN/USD</th>
+            <th>Shares Owned</th>
             <th>Opening Price</th>
             <th>Closing Price</th>
             <th>Current Price</th>
-            <th>Average Price</th>
             <th>Stock Day Gain/Loss</th>
+            <th>Average Price</th>
             <th>Stock Gain/Loss (average)</th>
             <th>Potintal Gain/Loss (CDN/USD)</th>
-            <th>Potintal Profit (CDN)</th>
-            <th>Total Dividends</th>
-            <th>Last Sold</th>
-            <th>Sold</th>
-            <th>Profit CDN/USD</th>
-            <th>Profit /w Dividends</th>
-            <th>Type</th>
-        </tr>
-
-        <tr>
-            <td colspan="22">CURRENT STOCKS</td>
         </tr>
 
         {% set sold_total = 0 %}
@@ -74,45 +72,56 @@
                     <td><img src="/images/logos/{{ stock.ticker }}.jpg" alt="" class="stock_table_logo"></td>
                     <td>{{ stock.name }}</td>
                     <td>{{ stock.ticker }}</td>
-                    <td data-shares="{{ stock.id }}">{{ stock.shares }}</td>
                     <td>{{ stock.firstBought|date("m/d/Y") }}</td>
                     <td>{{ stock.lastBought|date("m/d/Y") }}</td>
-                    <td data-currency="{{ stock.id }}">{{ stock.currency }}</td>
+                    <td>{% if stock.lastSold is not null %}{{ stock.lastSold|date("m/d/Y") }}{% else %}Never{% endif %}</td>
+                    <td>{{ stock.type }}</td>
+                    <td data-currency="{{ stock.id }}">{% if stock.currency == 1 %}<img class="stock_flag" src="images/canada_flag.png" alt="">{% else %}<img class="stock_flag" src="images/us_flag.png" alt="">{% endif %}</td>
+                    <td>${{ stock.sold|number_format(2) }}</td>
+                    <td data-div="{{stock.id}}">${{stock_dividend_total}}</td>
+                    <td data-profit="{{stock.id}}">${{ stock.profitCan|number_format(2) }}/${{ stock.profitUsd|number_format(2) }}</td>
+                    <td data-shares="{{ stock.id }}">{{ stock.shares }}</td>
                     <td data-opening="{{ stock.id }}">${{ stock.openingPrice|number_format(2) }}</td>
                     <td>${{ stock.closingPrice|number_format(2) }}</td>
                     <td><input type="text" class="current_price" placeholder="$0.00" data-id="{{ stock.id }}" value='{{ current_price }}'></td>
-                    <td data-average="{{ stock.id }}">${{ stock.averagePrice|number_format(2) }}</td>
                     <td data-day-gl="{{ stock.id }}" class="gl_day {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
+                    <td data-average="{{ stock.id }}">${{ stock.averagePrice|number_format(2) }}</td>
                     <td data-ave-gl="{{ stock.id }}" class="gl_ave {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
                     <td data-p-gl="{{ stock.id }}" data-buys="{{ stock.buys }}" class="gl_p {%if stock.shares == 0 %}no_total{% endif %}" >$0.00/$0.00</td>
-                    <td data-pp="{{ stock.id }}" class="pp {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
-                    <td data-div="{{stock.id}}">${{stock_dividend_total}}</td>
-                    <td>{{ stock.lastSold|date("m/d/Y") }}</td>
-                    <td>${{ stock.sold|number_format(2) }}</td>
-                    <td data-profit="{{stock.id}}">${{ stock.profitCan|number_format(2) }}/${{ stock.profitUsd|number_format(2) }}</td>
-                    <td data-pd-gl="{{ stock.id }}">${{ pd|number_format(2) }}</td>
-                    <td>{{ stock.type }}</td>
                 </tr>
             {% endif %}
         {% endfor %}
 
             <tr>
-                <td colspan="10">TOTAL</td>
+                <td colspan="8">TOTAL</td>
+                <td>${{ sold_total|number_format(2) }}</td>
+                <td>${{ dividend_total }}</td>
+                <td>${{ profit_cdn_total|number_format(2) }}/${{ profit_usd_total|number_format(2) }}</td>
+                <td colspan="4">N/A</td>
                 <td id="total_gl_day">$0.00</td>
+                <td>N/A</td>
                 <td id="total_gl_ave">$0.00</td>
                 <td id="total_gl_p">$0.00/$0.00</td>
-                <td id="total_pp">$0.00</td>
-                <td>${{ dividend_total }}</td>
-                <td>N/A</td>
-                <td>${{ sold_total|number_format(2) }}</td>
-                <td>${{ profit_cdn_total|number_format(2) }}/${{ profit_usd_total|number_format(2) }}</td>
-                <td>${{ profit_dividend_total }}</td>
-                <td>N/A</td>
             </tr>
 
             <tr>
                 <td colspan="22">OLD STOCKS</td>
             </tr>
+
+         <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Ticker</th>
+            <th>First Bought</th>
+            <th>Last Bought</th>
+            <th>Last Sold</th>
+            <th>Type</th>
+            <th>Currency</th>
+            <th>Sold</th>
+            <th>Total Dividends</th>
+            <th>Profit CDN/USD</th>
+            <th colspan="8"></th>
+        </tr>
 
 
         {% set sold_total = 0 %}
@@ -144,39 +153,34 @@
                 <td><img src="/images/logos/{{ stock.ticker }}.jpg" alt="" class="stock_table_logo"></td>
                 <td>{{ stock.name }}</td>
                 <td>{{ stock.ticker }}</td>
-                <td data-shares="{{ stock.id }}">{{ stock.shares }}</td>
                 <td>{{ stock.firstBought|date("m/d/Y") }}</td>
                 <td>{{ stock.lastBought|date("m/d/Y") }}</td>
-                <td data-currency="{{ stock.id }}">{{ stock.currency }}</td>
-                <td data-opening="{{ stock.id }}">${{ stock.openingPrice|number_format(2) }}</td>
-                <td>${{ stock.closingPrice|number_format(2) }}</td>
-                <td><input type="text" class="current_price" placeholder="$0.00" data-id="{{ stock.id }}" value='{{ current_price }}'></td>
-                <td data-average="{{ stock.id }}">${{ stock.averagePrice|number_format(2) }}</td>
-                <td data-day-gl="{{ stock.id }}" class="gl_day {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
-                <td data-ave-gl="{{ stock.id }}" class="gl_ave {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
-                <td data-p-gl="{{ stock.id }}" data-buys="{{ stock.buys }}" class="gl_p {%if stock.shares == 0 %}no_total{% endif %}" >$0.00/$0.00</td>
-                <td data-pp="{{ stock.id }}" class="pp {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
-                <td data-div="{{stock.id}}">${{stock_dividend_total}}</td>
                 <td>{{ stock.lastSold|date("m/d/Y") }}</td>
-                <td>${{ stock.sold|number_format(2) }}</td>
-                <td data-profit="{{stock.id}}">${{ stock.profitCan|number_format(2) }}/${{ stock.profitUsd|number_format(2) }}</td>
-                <td data-pd-gl="{{ stock.id }}">${{ pd|number_format(2) }}</td>
                 <td>{{ stock.type }}</td>
+                <td data-currency="{{ stock.id }}">{% if stock.currency == 1 %}<img class="stock_flag" src="images/canada_flag.png" alt="">{% else %}<img class="stock_flag" src="images/us_flag.png" alt="">{% endif %}</td>
+                <td>${{ stock.sold|number_format(2) }}</td>
+                <td data-div="{{stock.id}}">${{stock_dividend_total}}</td>
+                <td data-profit="{{stock.id}}">${{ stock.profitCan|number_format(2) }}/${{ stock.profitUsd|number_format(2) }}</td>
+                <td colspan="8">N/A</td>
             </tr>
         {% endfor %}
 
         <tr>
-            <td colspan="10">TOTAL</td>
-            <td id="total_gl_day">$0.00</td>
-            <td id="total_gl_ave">$0.00</td>
-            <td id="total_gl_p">$0.00/$0.00</td>
-            <td id="total_pp">$0.00</td>
+            <td colspan="7">TOTAL</td>
             <td>${{ dividend_total }}</td>
             <td>N/A</td>
             <td>${{ sold_total|number_format(2) }}</td>
             <td>${{ profit_cdn_total|number_format(2) }}/${{ profit_usd_total|number_format(2) }}</td>
-            <td>${{ profit_dividend_total }}</td>
+            <td colspan="8">N/A</td>
+        </tr>
+
+        <tr>
+            <td colspan="7">GRAND TOTAL</td>
+            <td>${{ dividend_total }}</td>
             <td>N/A</td>
+            <td>${{ sold_total|number_format(2) }}</td>
+            <td>${{ profit_cdn_total|number_format(2) }}/${{ profit_usd_total|number_format(2) }}</td>
+            <td colspan="8">N/A</td>
         </tr>
     </table>
 
