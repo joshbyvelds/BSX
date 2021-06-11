@@ -9,3 +9,4 @@
 /vendor/
 ###< symfony/framework-bundle ###
 node_modules
+/public/images/logos/*.jpg

@@ -6,6 +6,7 @@
     <h1>Dividends</h1>
     <table class="table table-bordered table-responsive">
         <tr>
+            <th style="width:60px"></th>
             <th>Date</th>
             <th>Stock</th>
             <th>Amount</th>
@@ -24,6 +25,7 @@
                 {% set total_stock = total_stock|merge({('stock_'~dividend_payment.stock.id):dividend_payment.amount}) %}    
             {% endif %}
             <tr>
+                <td><img src="/images/logos/{{ dividend_payment.stock.ticker }}.jpg" alt="" class="dividend_table_logo"></td>
                 <td>{{ dividend_payment.paymentDate|date("m/d/Y") }}</td>
                 <td>{{ dividend_payment.stock.name }}</td>
                 <td>{{ dividend_payment.amount|number_format(2) }}</td>
@@ -33,7 +35,7 @@
         {% endfor %}
 
         <tr>
-            <td colspan="2">TOTAL</td>
+            <td colspan="3">GRAND TOTAL</td>
             <td colspan="3">${{total|number_format(2)}}</td>
         </tr>
     </table>
