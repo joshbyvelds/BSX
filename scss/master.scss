@@ -17,3 +17,29 @@ input.current_price {
 .dividend_table_logo{
       width:80px;
 }
+
+.stock_flag {
+      width: 60px;
+}
+
+.stock_chip_icon{
+      display: inline-block;
+      width: 60px;
+      height: 60px;
+
+      &.type1{
+            background: url("/images/blue_chip_joint.png");
+      }
+
+      &.type2{
+            background: url("/images/blue_chip.png");
+      }
+
+      &.type3{
+            background: url("/images/red_chip_joint.png");
+      }
+
+      &.type4{
+            background: url("/images/red_chip.png");
+      }
+}

@@ -75,7 +75,7 @@
                     <td>{{ stock.firstBought|date("m/d/Y") }}</td>
                     <td>{{ stock.lastBought|date("m/d/Y") }}</td>
                     <td>{% if stock.lastSold is not null %}{{ stock.lastSold|date("m/d/Y") }}{% else %}Never{% endif %}</td>
-                    <td>{{ stock.type }}</td>
+                    <td><div class="stock_chip_icon type{{ stock.type }}"></div></td>
                     <td data-currency="{{ stock.id }}">{% if stock.currency == 1 %}<img class="stock_flag" src="images/canada_flag.png" alt="">{% else %}<img class="stock_flag" src="images/us_flag.png" alt="">{% endif %}</td>
                     <td>${{ stock.sold|number_format(2) }}</td>
                     <td data-div="{{stock.id}}">${{stock_dividend_total}}</td>
@@ -156,7 +156,7 @@
                 <td>{{ stock.firstBought|date("m/d/Y") }}</td>
                 <td>{{ stock.lastBought|date("m/d/Y") }}</td>
                 <td>{{ stock.lastSold|date("m/d/Y") }}</td>
-                <td>{{ stock.type }}</td>
+                <td><div class="stock_chip_icon type{{ stock.type }}"></div></td>
                 <td data-currency="{{ stock.id }}">{% if stock.currency == 1 %}<img class="stock_flag" src="images/canada_flag.png" alt="">{% else %}<img class="stock_flag" src="images/us_flag.png" alt="">{% endif %}</td>
                 <td>${{ stock.sold|number_format(2) }}</td>
                 <td data-div="{{stock.id}}">${{stock_dividend_total}}</td>
