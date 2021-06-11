@@ -45,6 +45,9 @@
         {% set profit_usd_total = 0 %}
         {% set profit_dividend_total = 0 %}
         {% set dividend_total = 0 %}
+        {% set grand_sold_total = 0 %}
+        {% set grand_dividend_total = 0 %}
+        {% set grand_profit_dividend_total = 0 %}
 
         {% for stock in stocks %}
             {% if stock.shares == 0 %}
@@ -52,7 +55,15 @@
             {% else %}
                 {% set current_price = stock.closingPrice|number_format(2) %}
                 {% set stock_dividend_total = 0 %}
-                {% set sold_total = sold_total + stock.sold %}
+                
+                {% set stock_sold = stock.sold %}
+                {% if stock.currency == 2 %}
+                    {% set stock_sold = stock.sold * 1.1936 %}
+                    {% set sold_total = sold_total + stock_sold %}
+                {% else %}
+                    {% set sold_total = sold_total + stock_sold %}
+                {% endif %}
+
                 {% set profit_cdn_total = profit_cdn_total + stock.profitCan %}
                 {% set profit_usd_total = profit_usd_total + stock.profitUsd %}
 
@@ -60,8 +71,14 @@
                     {% set stock_dividend_total = stock_dividend_total + dividend_payment.amount %}
                     {% set dividend_total = dividend_total + dividend_payment.amount %}
                 {% endfor %}
-
-                {% set pd = stock.profitCan + stock_dividend_total %}
+                
+                {% if stock.profitUsd < 0 %}
+                    {% set pus_convert = stock.profitUsd * 1.2286 %}
+                {% else %}
+                    {% set pus_convert = stock.profitUsd * 1.1936 %}
+                {% endif %}
+                
+                {% set pd = stock.profitCan + stock_dividend_total + pus_convert %}
                 {% set profit_dividend_total = profit_dividend_total + pd %}
 
                 {% if market_open %}
@@ -77,9 +94,9 @@
                     <td>{% if stock.lastSold is not null %}{{ stock.lastSold|date("m/d/Y") }}{% else %}Never{% endif %}</td>
                     <td><div class="stock_chip_icon type{{ stock.type }}"></div></td>
                     <td data-currency="{{ stock.id }}">{% if stock.currency == 1 %}<img class="stock_flag" src="images/canada_flag.png" alt="">{% else %}<img class="stock_flag" src="images/us_flag.png" alt="">{% endif %}</td>
-                    <td>${{ stock.sold|number_format(2) }}</td>
+                    <td>${{ stock_sold|number_format(2) }}</td>
                     <td data-div="{{stock.id}}">${{stock_dividend_total}}</td>
-                    <td data-profit="{{stock.id}}">${{ stock.profitCan|number_format(2) }}/${{ stock.profitUsd|number_format(2) }}</td>
+                    <td data-profit="{{stock.id}}">${{ pd|number_format(2) }}</td>
                     <td data-shares="{{ stock.id }}">{{ stock.shares }}</td>
                     <td data-opening="{{ stock.id }}">${{ stock.openingPrice|number_format(2) }}</td>
                     <td>${{ stock.closingPrice|number_format(2) }}</td>
@@ -92,21 +109,21 @@
             {% endif %}
         {% endfor %}
 
-            <tr>
-                <td colspan="8">TOTAL</td>
-                <td>${{ sold_total|number_format(2) }}</td>
-                <td>${{ dividend_total }}</td>
-                <td>${{ profit_cdn_total|number_format(2) }}/${{ profit_usd_total|number_format(2) }}</td>
-                <td colspan="4">N/A</td>
-                <td id="total_gl_day">$0.00</td>
-                <td>N/A</td>
-                <td id="total_gl_ave">$0.00</td>
-                <td id="total_gl_p">$0.00/$0.00</td>
-            </tr>
+        <tr>
+            <td colspan="8">TOTAL</td>
+            <td>${{ sold_total|number_format(2) }}</td>
+            <td>${{ dividend_total }}</td>
+            <td>${{ profit_dividend_total|number_format(2) }}</td>
+            <td colspan="4">N/A</td>
+            <td id="total_gl_day">$0.00</td>
+            <td>N/A</td>
+            <td id="total_gl_ave">$0.00</td>
+            <td id="total_gl_p">$0.00/$0.00</td>
+        </tr>
 
-            <tr>
-                <td colspan="22">OLD STOCKS</td>
-            </tr>
+        <tr>
+            <td colspan="22">OLD STOCKS</td>
+        </tr>
 
          <tr>
             <th></th>
@@ -123,6 +140,9 @@
             <th colspan="8"></th>
         </tr>
 
+        {% set grand_sold_total = sold_total %}
+        {% set grand_dividend_total = dividend_total %}
+        {% set grand_profit_dividend_total = profit_dividend_total %}
 
         {% set sold_total = 0 %}
         {% set profit_cdn_total = 0 %}
@@ -133,7 +153,14 @@
         {% for stock in oldStocks %}
             {% set current_price = stock.closingPrice|number_format(2) %}
             {% set stock_dividend_total = 0 %}
-            {% set sold_total = sold_total + stock.sold %}
+            {% set stock_sold = stock.sold %}
+            {% if stock.currency == 2 %}
+                {% set stock_sold = stock.sold * 1.1936 %}
+                {% set sold_total = sold_total + stock_sold %}
+            {% else %}
+                {% set sold_total = sold_total + stock_sold %}
+            {% endif %}
+           
             {% set profit_cdn_total = profit_cdn_total + stock.profitCan %}
             {% set profit_usd_total = profit_usd_total + stock.profitUsd %}
 
@@ -142,7 +169,13 @@
                 {% set dividend_total = dividend_total + dividend_payment.amount %}
             {% endfor %}
 
-            {% set pd = stock.profitCan + stock_dividend_total %}
+            {% if stock.profitUsd < 0 %}
+                {% set pus_convert = stock.profitUsd * 1.2286 %}
+            {% else %}
+                {% set pus_convert = stock.profitUsd * 1.1936 %}
+            {% endif %}
+            
+            {% set pd = stock.profitCan + stock_dividend_total + pus_convert %}
             {% set profit_dividend_total = profit_dividend_total + pd %}
 
             {% if market_open %}
@@ -158,28 +191,30 @@
                 <td>{{ stock.lastSold|date("m/d/Y") }}</td>
                 <td><div class="stock_chip_icon type{{ stock.type }}"></div></td>
                 <td data-currency="{{ stock.id }}">{% if stock.currency == 1 %}<img class="stock_flag" src="images/canada_flag.png" alt="">{% else %}<img class="stock_flag" src="images/us_flag.png" alt="">{% endif %}</td>
-                <td>${{ stock.sold|number_format(2) }}</td>
+                <td>${{ stock_sold|number_format(2) }}</td>
                 <td data-div="{{stock.id}}">${{stock_dividend_total}}</td>
-                <td data-profit="{{stock.id}}">${{ stock.profitCan|number_format(2) }}/${{ stock.profitUsd|number_format(2) }}</td>
+                <td data-profit="{{stock.id}}">${{ pd|number_format(2) }}</td>
                 <td colspan="8">N/A</td>
             </tr>
         {% endfor %}
 
+        {% set grand_sold_total =  grand_sold_total + sold_total %}
+        {% set grand_dividend_total = grand_dividend_total + dividend_total %}
+        {% set grand_profit_dividend_total = grand_profit_dividend_total + profit_dividend_total %}
+
         <tr>
-            <td colspan="7">TOTAL</td>
-            <td>${{ dividend_total }}</td>
-            <td>N/A</td>
+            <td colspan="8">TOTAL</td>
             <td>${{ sold_total|number_format(2) }}</td>
-            <td>${{ profit_cdn_total|number_format(2) }}/${{ profit_usd_total|number_format(2) }}</td>
+            <td>${{ dividend_total }}</td>
+            <td>${{ profit_dividend_total|number_format(2) }}</td>
             <td colspan="8">N/A</td>
         </tr>
 
         <tr>
-            <td colspan="7">GRAND TOTAL</td>
-            <td>${{ dividend_total }}</td>
-            <td>N/A</td>
-            <td>${{ sold_total|number_format(2) }}</td>
-            <td>${{ profit_cdn_total|number_format(2) }}/${{ profit_usd_total|number_format(2) }}</td>
+            <td colspan="8">GRAND TOTAL</td>
+            <td>${{ grand_sold_total|number_format(2) }}</td>
+            <td>${{ grand_dividend_total }}</td>
+            <td>${{ grand_profit_dividend_total|number_format(2) }}</td>
             <td colspan="8">N/A</td>
         </tr>
     </table>

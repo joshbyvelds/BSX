@@ -14,6 +14,7 @@
             <th>Total (Invest/Savings)</th>
             <th>Total Target (Invest/Savings)</th>
             <th>Percent Increase</th>
+            <th>Next Weeks Target</th>
         </tr>
 
         {% set total = 1000 %}
@@ -44,7 +45,8 @@
             <td>${{ target_week|number_format(2) }}</td>
             <td>${{ total|number_format(2) }} / ${{savings|number_format(2)}}</td>
             <td>${{ target|number_format(2) }} / ${{ savings_target|number_format(2) }}</td>
-            <td class="{% if percent > 0.20 %}hellyeah{% endif %}{% if percent < 0.10 %}fail{% endif %}">{{ percent|number_format(4) * 100 }}%</th>
+            <td class="{% if percent > 0.20 %}hellyeah{% endif %}{% if percent < 0.10 %}fail{% endif %}">{{ percent|number_format(4) * 100 }}%</td>
+            <td>N/A</td>
         </tr>
         {% endfor %}
     </table>
