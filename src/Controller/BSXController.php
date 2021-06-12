@@ -8,14 +8,17 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 use App\Entity\Stock;
+use App\Entity\PaperStock;
 use App\Entity\Dividend;
 use App\Entity\TenPlanWeek;
 use App\Form\AddStockType;
+use App\Form\AddPaperStockType;
 use App\Form\BuyStockType;
 use App\Form\SellStockType;
 use App\Form\DividendType;
 use App\Form\TenPlanWeekType;
 use App\Repository\StockRepository;
+use App\Repository\PaperStockRepository;
 use App\Repository\DividendRepository;
 use App\Repository\TenPlanWeekRepository;
 
@@ -130,6 +133,7 @@ class BSXController extends AbstractController
         $stock->setOpeningPrice(0);
         $stock->setClosingPrice(0);
         $stock->setSold(0);
+        $stock->setBuys(0);
         
         $form = $this->createForm(AddStockType::class, $stock);
         
@@ -396,6 +400,77 @@ class BSXController extends AbstractController
         }
 
         return $this->render('bsx/forms/dividend.html.twig', [
+            'controller_name' => 'BSXController',
+            'form' => $form->createView(),
+        ]);
+    }
+
+        /**
+     * @Route("/paper", name="paper")
+     */
+    public function paper(PaperStockRepository $stocksRepo): Response
+    {
+        $stocks = $stocksRepo->findAll();
+        
+
+        return $this->render('bsx/paper.html.twig', [
+            'controller_name' => 'BSXController',
+            'stocks' => $stocks,
+        ]);
+    }
+
+        /**
+     * @Route("/paper/add", name="paper_add")
+     */
+    public function addPaper(Request $request): Response
+    {
+        $stock = new PaperStock();
+        $stock->setOpeningPrice(0);
+        $stock->setClosingPrice(0);
+        $stock->setSold(0);
+        $stock->setBuys(0);
+        
+        $form = $this->createForm(AddPaperStockType::class, $stock);
+        
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()){
+            $data = $form->getData();
+            if($data->getBuyCurrency() === 1)
+            {
+                if($data->getCurrency() === 1){
+                    $stock->setProfitCan((($data->getShares() * $data->getAveragePrice()) + $this->trading_fee) * -1);
+                    $stock->setProfitUsd(0);
+                }
+
+                if($data->getCurrency() === 2){
+                    $stock->setProfitCan(((($data->getShares() * $data->getAveragePrice()) + $this->trading_fee) * $this->USDtoCANBuy) * -1);
+                    $stock->setProfitUsd(0);
+                }
+                
+            }
+
+            if($data->getBuyCurrency() === 2)
+            {
+                if($data->getCurrency() === 1){
+                    $stock->setProfitCan(0);
+                    $stock->setProfitUsd(((($data->getShares() * $data->getAveragePrice()) + $this->trading_fee) * $this->CANtoUSDBuy) * -1);
+                }
+
+                if($data->getCurrency() === 2){
+                    $stock->setProfitCan(0);
+                    $stock->setProfitUsd((($data->getShares() * $data->getAveragePrice()) + $this->trading_fee) * -1);
+                }
+            }
+
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($stock);
+            $em->flush();
+
+            return $this->redirectToRoute('paper');
+        }
+
+        return $this->render('bsx/forms/paper.add.html.twig', [
             'controller_name' => 'BSXController',
             'form' => $form->createView(),
         ]);
