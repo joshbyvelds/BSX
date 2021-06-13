@@ -475,4 +475,15 @@ class BSXController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+
+    /**
+     * @Route("/paper/delete/{id}", name="paper_delete", requirements={"id"="\d+"})
+     */
+    public function deletePaper(PaperStock $stock): Response
+    {
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($stock);
+        $em->flush();
+        return $this->redirectToRoute('paper');
+    }
 }

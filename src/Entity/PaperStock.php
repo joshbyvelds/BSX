@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\StockRepository;
+use App\Repository\PaperStockRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass=StockRepository::class)
+ * @ORM\Entity(repositoryClass=PaperStockRepository::class)
  */
 class PaperStock
 {

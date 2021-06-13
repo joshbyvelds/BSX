@@ -33,6 +33,7 @@
             <th>Average Price</th>
             <th>Stock Gain/Loss (average)</th>
             <th>Potintal Gain/Loss (CDN/USD)</th>
+            <th>Actions</th>
         </tr>
 
         {% set sold_total = 0 %}
@@ -95,6 +96,7 @@
                     <td data-average="{{ stock.id }}">${{ stock.averagePrice|number_format(2) }}</td>
                     <td data-ave-gl="{{ stock.id }}" class="gl_ave {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
                     <td data-p-gl="{{ stock.id }}" data-buys="{{ stock.buys }}" class="gl_p {%if stock.shares == 0 %}no_total{% endif %}" >$0.00/$0.00</td>
+                    <td><a href="/paper/delete/{{ stock.id }}" class="btn btn-danger">Delete</a></td>
                 </tr>
             {% endif %}
         {% endfor %}
