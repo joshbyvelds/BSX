@@ -37,6 +37,7 @@
             <th>Average Price</th>
             <th>Stock Gain/Loss (average)</th>
             <th>Potintal Gain/Loss (CDN/USD)</th>
+            <th>Links</th>
         </tr>
 
         {% set sold_total = 0 %}
@@ -104,6 +105,8 @@
                     <td data-average="{{ stock.id }}">${{ stock.averagePrice|number_format(2) }}</td>
                     <td data-ave-gl="{{ stock.id }}" class="gl_ave {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
                     <td data-p-gl="{{ stock.id }}" data-buys="{{ stock.buys }}" class="gl_p {%if stock.shares == 0 %}no_total{% endif %}" >$0.00/$0.00</td>
+                    <td><a href="https://www.google.com/finance/quote/{{stock.ticker}}">Google</a> <a href="https://finance.yahoo.com/quote/{{stock.ticker}}">Yahoo</a> <a href="https://www.marketbeat.com/stocks/TSE/{{stock.ticker}}/dividend/">Dividend</a></td>
+                    
                 </tr>
             {% endif %}
         {% endfor %}
@@ -226,8 +229,8 @@
             <ul>
                 <li>View what stocks I own, how much of each stock,what the current stock price is, and how much I would gain/loss if I sold it all (with and without dividends) ✔️</li>
                 <li>Current Gain/Loss for all of my stocks combined (with and without dividends) ✔️</li>
-                <li>Dividend Payments for each stock I own and how much I earned. Each Payment and Total</li>
-                <li>Dividend Total Amounts for Each month</li>
+                <li>Dividend Payments for each stock I own and how much I earned. Each Payment and Total  ✔️</li>
+                <li>Dividend Total Amounts for Each month  ✔️</li>
             </ul>
         </p>
     </article>
@@ -235,8 +238,12 @@
     <article>
         <h2>TODO LIST</h2>
         <ul>
-            <li>Create Dividened Entity, Page and Form</li>
+            <li>Create Dividened Entity, Page and Form  ✔️</li>
             <li>Get Total Dividened Payment amount and add to homepage stock table column ✔️</li>
+            <li>Create a new column on table called Profit Point. it should indicate the price a stock needs be at in order to make a profit on a sale.</li>
+            <li>Set Buys property to 1 on stock entity when you add a stock</li>
+            <li>Increase Buys property by 1 when you buy more of a stock</li>
+            <li>Decrease Buys to zero when you sell all of a stock OR when you sell some shares of a stock above profit point</li>
         </ul>
     </article>
 {% endblock %}
