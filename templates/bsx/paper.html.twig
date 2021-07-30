@@ -32,6 +32,7 @@
             <th>Stock Day Gain/Loss</th>
             <th>Average Price</th>
             <th>Stock Gain/Loss (average)</th>
+            <th>Profit Point</th>
             <th>Potintal Gain/Loss (CDN/USD)</th>
             <th>Actions</th>
         </tr>
@@ -95,6 +96,7 @@
                     <td data-day-gl="{{ stock.id }}" class="gl_day {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
                     <td data-average="{{ stock.id }}">${{ stock.averagePrice|number_format(2) }}</td>
                     <td data-ave-gl="{{ stock.id }}" class="gl_ave {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
+                    <td data-pp={{ stock.id }}>$0.00</td>
                     <td data-p-gl="{{ stock.id }}" data-buys="{{ stock.buys }}" class="gl_p {%if stock.shares == 0 %}no_total{% endif %}" >$0.00/$0.00</td>
                     <td><a href="/paper/delete/{{ stock.id }}" class="btn btn-danger">Delete</a></td>
                 </tr>
@@ -109,6 +111,7 @@
             <td id="total_gl_day">$0.00</td>
             <td>N/A</td>
             <td id="total_gl_ave">$0.00</td>
+            <td>N/A</td>
             <td id="total_gl_p">$0.00/$0.00</td>
         </tr>
     </table>

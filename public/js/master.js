@@ -1,11 +1,12 @@
 $(function(){
     const trading_fee = 9.95;
-    const CANtoUSD = 0.8139;
-    const USDtoCAN = 1.1936;
+    const CANtoUSD = 0.805;
+    const USDtoCAN = 1.2422;
     var gl_total_day = 0;
     var gl_total_ave = 0;
 
     $CP = $("input.current_price");
+    $WCP = $("input.wizard_current_price");
 
     $CP.each(function(){
         updateCurrentPrice($(this).attr("data-id"), $(this).val());
@@ -17,12 +18,17 @@ $(function(){
         updateGLTotals();
     });
 
+    $WCP.on('change', function(){        
+        updateWizardCurrentPrice($(this).attr("data-id"), $(this).val());
+    });
+
+
+
     function updateCurrentPrice(id, current){
         let day = parseFloat($("[data-opening=" + id + "]").html().replace("$", ""));
         let average = parseFloat($("[data-average=" + id + "]").html().replace("$", ""));
         let shares = $("[data-shares=" + id + "]").html();
         let currency = parseInt($("[data-currency=" + id + "]").html());
-        var profit = $("[data-profit=" + id + "]").html().replace("$", "").split("/");
         let buys = $("[data-p-gl=" + id + "]").attr("data-buys");
 
         console.log(buys);
@@ -36,7 +42,10 @@ $(function(){
             $("[data-p-gl=" + id + "]").html("$" + ((((parseFloat(current) - average) * shares) - trading_fee - (trading_fee * buys)) * USDtoCAN ).toFixed(2) + "/" + (((parseFloat(current) - average) * shares - (trading_fee * buys)) - trading_fee).toFixed(2));
         }
 
-        $("[data-pp=" + id + "]").html(parseFloat(profit[1]));
+        $("[data-pp=" + id + "]").html("$" + (average + ((trading_fee + (trading_fee * buys)) / shares)).toFixed(2));
+
+        //173.88
+        $.post("/update", {id:id,price:current});
     }
 
     function updateGLTotals(){
@@ -69,4 +78,13 @@ $(function(){
         $("#total_gl_p").html("$" + gl_total_p_cdn.toFixed(2) + "/$" + gl_total_p_usd.toFixed(2));
         $("#total_pp").html("$" + pp_total.toFixed(2));
     }
+
+    function calculateStock(){
+        
+    }
+
+    function updateWizardCurrentPrice(id, current){
+        $.post("/wizards/updateplay", {id:id,price:current});
+    }
+
 });

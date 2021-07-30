@@ -100,9 +100,14 @@ class Stock
     private $closing_price;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      */
     private $buys;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $current_price;
 
     public function __construct()
     {
@@ -357,14 +362,26 @@ class Stock
         return $this;
     }
 
-    public function getBuys(): ?int
+    public function getBuys(): ?float
     {
         return $this->buys;
     }
 
-    public function setBuys(int $buys): self
+    public function setBuys(float $buys): self
     {
         $this->buys = $buys;
+
+        return $this;
+    }
+
+    public function getCurrentPrice(): ?float
+    {
+        return $this->current_price;
+    }
+
+    public function setCurrentPrice(float $current_price): self
+    {
+        $this->current_price = $current_price;
 
         return $this;
     }

@@ -11,16 +11,19 @@ use App\Entity\Stock;
 use App\Entity\PaperStock;
 use App\Entity\Dividend;
 use App\Entity\TenPlanWeek;
+use App\Entity\WizardPlay;
 use App\Form\AddStockType;
 use App\Form\AddPaperStockType;
 use App\Form\BuyStockType;
 use App\Form\SellStockType;
 use App\Form\DividendType;
 use App\Form\TenPlanWeekType;
+use App\Form\WizardType;
 use App\Repository\StockRepository;
 use App\Repository\PaperStockRepository;
 use App\Repository\DividendRepository;
 use App\Repository\TenPlanWeekRepository;
+use App\Repository\WizardPlayRepository;
 
 class BSXController extends AbstractController
 {
@@ -114,6 +117,7 @@ class BSXController extends AbstractController
             forEach($stocks as $stock){
                 $stock->setOpeningPrice($MarketStackData['data'][$stockIndex]['open']);
                 $stock->setClosingPrice($MarketStackData['data'][$stockIndex]['close']);
+                $stock->setCurrentPrice($MarketStackData['data'][$stockIndex]['close']);
                 $em = $this->getDoctrine()->getManager();
                 $em->persist($stock);
                 $em->flush();
@@ -311,6 +315,22 @@ class BSXController extends AbstractController
         ]);
     }
 
+    /**
+     * @Route("/update", name="update")
+     */
+    public function update (StockRepository $repo, Request $request) {
+        $em = $this->getDoctrine()->getManager();
+        $id = $request->get('id');
+        $price = $request->get('price');
+        $stock = $repo->findOneBy(['id' => $id]);
+        $stock->setCurrentPrice((float)$price);
+        $em->flush();
+
+        $response = new Response(json_encode(['success' => 1]));
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
+    }
+
      /**
      * @Route("/stock", name="stock")
      */
@@ -319,6 +339,70 @@ class BSXController extends AbstractController
         return $this->render('bsx/stock.html.twig', [
             'controller_name' => 'BSXController',
         ]);
+    }
+
+    /**
+     * @Route("/wizards", name="wizards")
+     */
+    public function wizards(wizardPlayRepository $wizardsRepo): Response
+    {
+        $wizardPlays = $wizardsRepo->findAll();
+        
+        return $this->render('bsx/plays.html.twig', [
+            'plays' => $wizardPlays
+        ]);
+    }
+
+    /**
+     * @Route("/wizards/add", name="add_wizard_play")
+     */
+    public function addWizard(Request $request): Response
+    {
+        $play = new WizardPlay();
+        $form = $this->createForm(WizardType::class, $play);
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()){
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($play);
+            $em->flush();
+
+            return $this->redirectToRoute('wizards');
+        }
+
+        return $this->render('bsx/forms/wizard.html.twig', [
+            'controller_name' => 'BSXController',
+            'form' => $form->createView(),
+        ]);
+    }
+
+    /**
+     * @Route("/wizards/delete/{id}", name="wizard_delete", requirements={"id"="\d+"})
+     */
+    public function deleteWizard(WizardPlay $stock): Response
+    {
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($stock);
+        $em->flush();
+        return $this->redirectToRoute('wizards');
+    }
+
+    /**
+     * @Route("/wizards/updateplay", name="wizard_update")
+     */
+    public function updateWizard (WizardPlayRepository $repo, Request $request) {
+        $em = $this->getDoctrine()->getManager();
+
+        $postData = json_decode($request->getContent());
+        $id = $request->get('id');
+        $price = $request->get('price');
+        $stock = $repo->findOneBy(['id' => $id]);
+        $stock->setCurrentPrice((float)$price);
+        $em->flush();
+
+        $response = new Response(json_encode(['success' => 1]));
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
     }
 
     /**
@@ -419,7 +503,15 @@ class BSXController extends AbstractController
         ]);
     }
 
-        /**
+    /**
+     * @Route("/calculator", name="calculator")
+     */
+    public function calculator(Request $request): Response
+    {
+        return $this->render('bsx/calculator.html.twig', []);
+    }
+
+     /**
      * @Route("/paper/add", name="paper_add")
      */
     public function addPaper(Request $request): Response

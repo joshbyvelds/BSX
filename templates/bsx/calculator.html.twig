@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Byvelds Stock Exchange{% endblock %}
+
+{% block body %}
+    <a href="/tenplan" class="btn btn-primary">TEN PERCENT PLAN</a>
+    <a href="/dividends" class="btn btn-primary">DIVIDENDS</a>
+    <a href="/paper" class="btn btn-primary">PAPER TRADE</a>
+    <a href="/add" class="btn btn-primary">ADD</a>
+    <a href="/buy" class="btn btn-primary">BUY</a>
+    <a href="/sell" class="btn btn-primary">SELL</a>
+    <a href="/updatestockinfo" class="btn btn-warning">UPDATE EOD STOCK INFO FROM API</a>
+
+    {% set oldStocks = [] %}
+    <table class="table table-bordered table-responsive">
+        <tr>
+            <td colspan="24">CURRENT STOCKS</td>
+        </tr>
+        
+        <tr>
+            <th>Currency</th>
+            <th>Bank</th>
+            <th>Shares Owned</th>
+            <th>Average Price</th>
+            <th>Current Price</th>
+            <th>Profit Point</th>
+        </tr>
+
+        <tr>
+            <td><select name="" id=""></select></td>
+            <td><input type="text"></td>
+            <td><input type="text"></td>
+            <td><input type="text"></td>
+            <td><input type="text"></td>
+            <td><input type="text"></td>
+        </tr>
+    </table>
+{% endblock %}

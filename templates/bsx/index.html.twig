@@ -3,6 +3,7 @@
 {% block title %}BSX - Byvelds Stock Exchange{% endblock %}
 
 {% block body %}
+    <a href="/wizards" class="btn btn-primary">TICKER WIZARDS</a>
     <a href="/tenplan" class="btn btn-primary">TEN PERCENT PLAN</a>
     <a href="/dividends" class="btn btn-primary">DIVIDENDS</a>
     <a href="/paper" class="btn btn-primary">PAPER TRADE</a>
@@ -14,7 +15,7 @@
     {% set oldStocks = [] %}
     <table class="table table-bordered table-responsive">
         <tr>
-            <td colspan="22">CURRENT STOCKS</td>
+            <td colspan="24">CURRENT STOCKS</td>
         </tr>
         
         <tr>
@@ -36,6 +37,7 @@
             <th>Stock Day Gain/Loss</th>
             <th>Average Price</th>
             <th>Stock Gain/Loss (average)</th>
+            <th>Profit Point</th>
             <th>Potintal Gain/Loss (CDN/USD)</th>
             <th>Links</th>
         </tr>
@@ -53,7 +55,7 @@
             {% if stock.shares == 0 %}
                 {% set oldStocks = oldStocks|merge([stock]) %}
             {% else %}
-                {% set current_price = stock.closingPrice|number_format(2) %}
+                {% set current_price = stock.currentPrice|number_format(2) %}
                 {% set stock_dividend_total = 0 %}
                 
                 {% set stock_sold = stock.sold %}
@@ -80,10 +82,6 @@
                 
                 {% set pd = stock.profitCan + stock_dividend_total + pus_convert %}
                 {% set profit_dividend_total = profit_dividend_total + pd %}
-
-                {% if market_open %}
-                    {% set current_price = stock.openingPrice|number_format(2) %}
-                {% endif %}
                 
                 <tr data-id="{{ stock.id }}">
                     <td><img src="/images/logos/{{ stock.ticker }}.jpg" alt="" class="stock_table_logo"></td>
@@ -104,6 +102,7 @@
                     <td data-day-gl="{{ stock.id }}" class="gl_day {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
                     <td data-average="{{ stock.id }}">${{ stock.averagePrice|number_format(2) }}</td>
                     <td data-ave-gl="{{ stock.id }}" class="gl_ave {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
+                    <td data-pp={{ stock.id }}>$0.00</td>
                     <td data-p-gl="{{ stock.id }}" data-buys="{{ stock.buys }}" class="gl_p {%if stock.shares == 0 %}no_total{% endif %}" >$0.00/$0.00</td>
                     <td><a href="https://www.google.com/finance/quote/{{stock.ticker}}">Google</a> <a href="https://finance.yahoo.com/quote/{{stock.ticker}}">Yahoo</a> <a href="https://www.marketbeat.com/stocks/TSE/{{stock.ticker}}/dividend/">Dividend</a></td>
                     
@@ -118,13 +117,13 @@
             <td>${{ profit_dividend_total|number_format(2) }}</td>
             <td colspan="4">N/A</td>
             <td id="total_gl_day">$0.00</td>
-            <td>N/A</td>
+            <td colspan="2">N/A</td>
             <td id="total_gl_ave">$0.00</td>
             <td id="total_gl_p">$0.00/$0.00</td>
         </tr>
 
         <tr>
-            <td colspan="22">OLD STOCKS</td>
+            <td colspan="24">OLD STOCKS</td>
         </tr>
 
          <tr>
@@ -196,7 +195,7 @@
                 <td>${{ stock_sold|number_format(2) }}</td>
                 <td data-div="{{stock.id}}">${{stock_dividend_total}}</td>
                 <td data-profit="{{stock.id}}">${{ pd|number_format(2) }}</td>
-                <td colspan="8">N/A</td>
+                <td colspan="10">N/A</td>
             </tr>
         {% endfor %}
 
@@ -209,7 +208,7 @@
             <td>${{ sold_total|number_format(2) }}</td>
             <td>${{ dividend_total }}</td>
             <td>${{ profit_dividend_total|number_format(2) }}</td>
-            <td colspan="8">N/A</td>
+            <td colspan="10">N/A</td>
         </tr>
 
         <tr>
@@ -217,7 +216,7 @@
             <td>${{ grand_sold_total|number_format(2) }}</td>
             <td>${{ grand_dividend_total }}</td>
             <td>${{ grand_profit_dividend_total|number_format(2) }}</td>
-            <td colspan="8">N/A</td>
+            <td colspan="10">N/A</td>
         </tr>
     </table>
 
