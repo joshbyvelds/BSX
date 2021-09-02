@@ -109,6 +109,11 @@ class Stock
      */
     private $current_price;
 
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $notes;
+
     public function __construct()
     {
         $this->dividends = new ArrayCollection();
@@ -374,6 +379,12 @@ class Stock
         return $this;
     }
 
+    public function addBuy(): self
+    {
+        $this->buys++;
+        return $this;
+    }
+
     public function getCurrentPrice(): ?float
     {
         return $this->current_price;
@@ -382,6 +393,18 @@ class Stock
     public function setCurrentPrice(float $current_price): self
     {
         $this->current_price = $current_price;
+
+        return $this;
+    }
+
+    public function getNotes(): ?string
+    {
+        return $this->notes;
+    }
+
+    public function setNotes(?string $notes): self
+    {
+        $this->notes = $notes;
 
         return $this;
     }

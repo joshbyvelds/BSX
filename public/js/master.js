@@ -1,7 +1,7 @@
 $(function(){
     const trading_fee = 9.95;
     const CANtoUSD = 0.805;
-    const USDtoCAN = 1.2422;
+    const USDtoCAN = 1.2325;
     var gl_total_day = 0;
     var gl_total_ave = 0;
 
@@ -21,8 +21,6 @@ $(function(){
     $WCP.on('change', function(){        
         updateWizardCurrentPrice($(this).attr("data-id"), $(this).val());
     });
-
-
 
     function updateCurrentPrice(id, current){
         let day = parseFloat($("[data-opening=" + id + "]").html().replace("$", ""));

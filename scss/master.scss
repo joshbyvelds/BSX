@@ -51,3 +51,47 @@ input.current_price {
       border-radius: 30px;
 
 }
+
+
+// Watch list
+
+.arrow{
+      &.green{
+            color: green;
+      }
+
+      &.red{
+            color: red;
+      }
+
+      &.grey{
+            color: gray
+      }
+}
+
+.status.on{
+      &.dead{
+            background: lightcoral;
+
+            &.bad{
+                  background: red;
+            }
+      }
+
+      &.buy {
+            background: pink;
+      }
+
+      &.pp {
+            background: goldenrod;
+      }
+
+      &.target {
+            background: lightseagreen;
+      }
+
+      &.golden {
+            background: gold;
+      }
+}
+

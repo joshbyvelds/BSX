@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello BSXController!{% endblock %}
+
+{% block body %}
+    <h1>BSX Stock</h1>
+
+    <table class="table table-bordered table-responsive">
+        <tr>
+            <td colspan="22">STOCK WATCHLIST</td>
+        </tr>
+        
+        <tr>
+            <th></th>
+            <th>Name</th>
+            <th style="width: 210px;">Current</th>
+            <th>Deadstop</th>
+            <th>Buy In</th>
+            <th>Profit Point</th>
+            <th>Target</th>
+            <th>Golden</th>
+            <th>Update Time (minutes)</th>
+            <th>Actions</th>
+        </tr>
+
+        {% for stock in watchlist %}
+            <tr data-id="{{ stock.id }}">
+                <td><img src="/images/logos/{{ stock.ticker }}.jpg" alt="" class="stock_table_logo"></td>
+                <td>{{ stock.name }}</td>
+                <td id="current_{{ stock.id }}">{{ stock.current }}</td>
+                <td class="status dead">{{ stock.deadstop }}</td>
+                <td class="status buy">{{ stock.buyin }}</td>
+                <td class="status pp">{{ stock.profitpoint }}</td>
+                <td class="status target">{{ stock.target }}</td>
+                <td class="status golden">{{ stock.golden }}</td>
+                <td><input class="watchtime" data-id="{{ stock.id }}" type="number" value='1' /></td>
+                <td><a href="/watchlist/delete/{{ stock.id }}" class="btn btn-danger">Delete</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+    <a href="/watchlist/add" class="btn btn-primary">ADD</a>
+    <a href="/" class="btn btn-primary">BACK TO MAIN</a>    
+
+    <script>
+    var counter = 0;
+    var prev = [];
+    var prev_icons = "";
+    var max_icons = 12;
+
+        $(function(){
+
+             $(".watchtime").each(function(e,i){
+                 prev.push([]);
+             });
+
+             console.log(prev);
+            
+
+            function checkStock(){
+                //console.log("check");
+                
+                $(".watchtime").each(function(i,e){
+                    var id = $(this).attr("data-id");
+                    var count = counter % (60 * parseFloat($(this).val()));
+
+                    console.log(count);
+                    console.log("I:" + i);
+
+                    if(count === 0){
+                        $.post("/watchlist/check", {id:id}, function(json){
+                            var c = (json.dir_up === 2) ? "bi arrow grey bi-dash-square-fill" : (json.dir_up === 1) ? "bi arrow green bi-arrow-up-square-fill" : "bi arrow red bi-arrow-down-square-fill";
+                            if(prev[i].length === max_icons){
+                                prev[i].shift();
+                            }
+
+                            prev[i].push('<i class="' + c + '"></i>');
+                            prev_icons = '<br />';
+
+                            if(prev[i].length > 0){prev[i].forEach(function(e,i2){prev_icons += prev[i][i2]});};
+                            $("#current_" + id).html('<i class="' + c + '"></i> ' + json.current + prev_icons);
+                            $(".status.dead").removeClass("bad");
+
+                            switch(json.status){
+                                case(1):
+                                    $(".status.dead").addClass("on bad");
+                                    break;
+                                case(2):
+                                    $(".status.dead").addClass("on");
+                                    break;
+                                case(3):
+                                    $(".status.buy").addClass("on");
+                                    break;
+                                case(4):
+                                    $(".status.pp").addClass("on");
+                                    break;
+                                case(5):
+                                    $(".status.target").addClass("on");
+                                    break;
+                                case(6):
+                                    $(".status.golden").addClass("on");
+                                    break;
+                            }
+                        });
+                    }
+                });
+
+                counter += 1;
+                setTimeout(checkStock,1000)
+            }
+
+            checkStock();
+        });
+
+    </script>
+
+{% endblock %}
+

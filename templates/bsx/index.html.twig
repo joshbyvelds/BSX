@@ -3,8 +3,9 @@
 {% block title %}BSX - Byvelds Stock Exchange{% endblock %}
 
 {% block body %}
-    <a href="/wizards" class="btn btn-primary">TICKER WIZARDS</a>
+    <a href="/watchlist" class="btn btn-primary">WATCH LIST</a>
     <a href="/tenplan" class="btn btn-primary">TEN PERCENT PLAN</a>
+    <a href="/wizards" class="btn btn-primary">TICKER WIZARDS</a>
     <a href="/dividends" class="btn btn-primary">DIVIDENDS</a>
     <a href="/paper" class="btn btn-primary">PAPER TRADE</a>
     <a href="/add" class="btn btn-primary">ADD</a>
@@ -84,7 +85,7 @@
                 {% set profit_dividend_total = profit_dividend_total + pd %}
                 
                 <tr data-id="{{ stock.id }}">
-                    <td><img src="/images/logos/{{ stock.ticker }}.jpg" alt="" class="stock_table_logo"></td>
+                    <td {% if stock.notes %}rowspan="2"{% endif %}><img src="/images/logos/{{ stock.ticker }}.jpg" alt="" class="stock_table_logo"></td>
                     <td>{{ stock.name }}</td>
                     <td>{{ stock.ticker }}</td>
                     <td>{{ stock.firstBought|date("m/d/Y") }}</td>
@@ -105,8 +106,15 @@
                     <td data-pp={{ stock.id }}>$0.00</td>
                     <td data-p-gl="{{ stock.id }}" data-buys="{{ stock.buys }}" class="gl_p {%if stock.shares == 0 %}no_total{% endif %}" >$0.00/$0.00</td>
                     <td><a href="https://www.google.com/finance/quote/{{stock.ticker}}">Google</a> <a href="https://finance.yahoo.com/quote/{{stock.ticker}}">Yahoo</a> <a href="https://www.marketbeat.com/stocks/TSE/{{stock.ticker}}/dividend/">Dividend</a></td>
-                    
                 </tr>
+                {% if stock.notes %}
+                <tr>
+                    <td colspan="20">
+                        {{ stock.notes }}
+                    </td>
+                </tr>
+                {% endif %}
+                
             {% endif %}
         {% endfor %}
 

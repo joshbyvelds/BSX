@@ -2,17 +2,22 @@
 
 namespace App\Controller;
 
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 
 use App\Entity\Stock;
 use App\Entity\PaperStock;
 use App\Entity\Dividend;
 use App\Entity\TenPlanWeek;
+use App\Entity\WatchStock;
 use App\Entity\WizardPlay;
 use App\Form\AddStockType;
+use App\Form\AddWatchStockType;
 use App\Form\AddPaperStockType;
 use App\Form\BuyStockType;
 use App\Form\SellStockType;
@@ -24,6 +29,10 @@ use App\Repository\PaperStockRepository;
 use App\Repository\DividendRepository;
 use App\Repository\TenPlanWeekRepository;
 use App\Repository\WizardPlayRepository;
+use App\Repository\WatchStockRepository;
+
+use Joli\JoliNotif\Notification;
+use Joli\JoliNotif\NotifierFactory;
 
 class BSXController extends AbstractController
 {
@@ -137,7 +146,8 @@ class BSXController extends AbstractController
         $stock->setOpeningPrice(0);
         $stock->setClosingPrice(0);
         $stock->setSold(0);
-        $stock->setBuys(0);
+        $stock->setBuys(1);
+        $stock->setCurrentPrice(0);
         
         $form = $this->createForm(AddStockType::class, $stock);
         
@@ -209,6 +219,7 @@ class BSXController extends AbstractController
                 $stock->addShares($data['shares']);
                 $stock->setLastBought($data['buy_date']);
                 $stock->setAveragePrice(round($new_average, 2, PHP_ROUND_HALF_UP));
+                $stock->addBuy();
                 //dump($stock);
 
                 // Adjust Profit
@@ -520,7 +531,7 @@ class BSXController extends AbstractController
         $stock->setOpeningPrice(0);
         $stock->setClosingPrice(0);
         $stock->setSold(0);
-        $stock->setBuys(0);
+        $stock->setBuys(1);
         
         $form = $this->createForm(AddPaperStockType::class, $stock);
         
@@ -578,4 +589,178 @@ class BSXController extends AbstractController
         $em->flush();
         return $this->redirectToRoute('paper');
     }
+
+    /**
+     * @Route("/watchlist", name="watchlist")
+     */
+    public function watchlist(WatchStockRepository $watchstockRepo): Response
+    {
+        $watchlist = $watchstockRepo->findAll();
+        
+        return $this->render('bsx/watchlist.html.twig', [
+            'watchlist' => $watchlist
+        ]);
+    }
+
+    /**
+     * @Route("/watchlist/add", name="watch_add")
+     */
+    public function addWatchTarget(Request $request): Response
+    {
+        $stock = new WatchStock();
+        $form = $this->createForm(AddWatchStockType::class, $stock);
+        
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()){
+            $stock->setStatus(0);
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($stock);
+            $em->flush();
+
+            return $this->redirectToRoute('watchlist');
+        }
+
+        return $this->render('bsx/forms/watch.html.twig', [
+            'controller_name' => 'BSXController',
+            'form' => $form->createView(),
+        ]);
+    }
+
+     /**
+     * @Route("/watchlist/delete/{id}", name="watch_delete", requirements={"id"="\d+"})
+     */
+    public function deleteWatch(WatchStock $watchstock): Response
+    {
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($watchstock);
+        $em->flush();
+        return $this->redirectToRoute('watchlist');
+    }
+
+    /**
+     * @Route("/watchlist/check", name="watch_check")
+     */
+    public function watchCheck(WatchStockRepository $repo, Request $request)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $direction_up = 0;
+
+        $postData = json_decode($request->getContent());
+        $id = $request->get('id');
+        $stock = $repo->findOneBy(['id' => $id]);
+
+        $url = $stock->getUrl();
+        $name = $stock->getName();
+        $ticker = $stock->getTicker();
+        $prev = $stock->getCurrent();
+        $dead = $stock->getDeadstop();
+        $buyin = $stock->getBuyin();
+        $pp = $stock->getProfitpoint();
+        $target = $stock->getTarget();
+        $golden = $stock->getGolden();
+        $prev_status = $stock->getStatus();
+
+        /*
+        * --- Get Current Price from internet ---
+        */
+
+        $content = file_get_contents($url);
+        // checks if the content we're receiving isn't empty, to avoid the warning
+        if ( empty( $content ) ) {
+            return false;
+        }
+
+        // converts all special characters to utf-8
+        $content = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
+
+        // creating new document
+        $doc = new \DOMDocument('1.0', 'utf-8');
+
+        //turning off some errors
+        libxml_use_internal_errors(true);
+
+        // it loads the content without adding enclosing html/body tags and also the doctype declaration
+        $doc->LoadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
+        $doc->validateOnParse = true;
+        $doc->loadHtml($content);
+        $xpath = new \DOMXPath($doc);
+        $current = (float)substr($xpath->query('//meta[@name="price"]')[0]->attributes[1]->value, 1);
+
+        /*
+        * --- Update Status ---
+        */ 
+
+        $direction_up = ($current > $prev) ? 1 : 0;
+
+        if($current === $prev){
+            $direction_up = 2;
+        }
+
+        if($current > $dead){
+            $status = 2;
+            $range = "Dead Stop Warning (-$20 - -$50)";
+            $old_range = (($direction_up === 1) ? 'Dead Stop' : 'Buy In Price');
+        } else {
+            $status = 1;
+            $range = "Below Dead Stop (-$50+)";
+            $old_range = "Dead Stop";
+        }
+
+        if($current > $buyin){
+            $status = 3;
+            $range = "Buy In (-$20 - $0)";
+            $old_range = (($direction_up === 1) ? 'Buy In Price' : 'Profit Point');
+        }
+
+        if($current > $pp){
+            $status = 4;
+            $range = "Small Profit ($0 - $75)";
+            $old_range = (($direction_up === 1) ? 'Profit Point' : 'Price Target');
+        }
+
+        if($current > $target){
+            $status = 5;
+            $range = "Target Profit ($75 - $150)";
+            $old_range = (($direction_up === 1) ? 'Target Price' : 'Golden Target');
+        }
+
+        if($current > $golden){
+            $status = 6;
+            $range = "Golden Profit ($150+)";
+            $old_range = "Golden Target";
+        }
+
+        if($status !== $prev_status){
+            $stock->setStatus($status);
+            
+            $notifier = NotifierFactory::create();
+
+            // // Create your notification
+            $notification =
+                (new Notification())
+                ->setTitle($ticker . ' Status Change')
+                ->setBody($name . ' stock price is now' . (($direction_up === 1) ? ' above ' : ' below ') . $old_range . '. New Range is '. $range . ' ('. $status .')')
+                ->setIcon(__DIR__.'/../../public/images/logos/'. $ticker. '.jpg')
+            ;
+    
+            // // Send it
+            $notifier->send($notification);
+            //*/
+    
+        }
+
+
+        $stock->setCurrent((float)$current);
+        $em->flush();
+
+
+        $response = new Response(json_encode(['success' => 1, 'id' => $id, 'status' => $status, 'dir_up' => $direction_up, 'url' => $url, 'current' => $current]));
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
+    }
 }
+
+
+
