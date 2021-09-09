@@ -729,11 +729,11 @@ class BSXController extends AbstractController
 
         if($current > $dead){
             $status = 2;
-            $range = "Dead Stop Warning (-$20 - -$50)";
+            $range = "Dead Stop Warning (-$20 - -$35)";
             $old_range = (($direction_up === 1) ? 'Dead Stop' : 'Buy In Price');
         } else {
             $status = 1;
-            $range = "Below Dead Stop (-$50+)";
+            $range = "Below Dead Stop (-$35+)";
             $old_range = "Dead Stop";
         }
 
