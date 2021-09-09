@@ -729,7 +729,7 @@ class BSXController extends AbstractController
 
         if($current > $dead){
             $status = 2;
-            $range = "Dead Stop Warning (-$20 - -$35)";
+            $range = "Dead Stop Warning (-$20 to -$35)";
             $old_range = (($direction_up === 1) ? 'Dead Stop' : 'Buy In Price');
         } else {
             $status = 1;
@@ -739,25 +739,25 @@ class BSXController extends AbstractController
 
         if($current > $buyin){
             $status = 3;
-            $range = "Buy In (-$20 - $0)";
+            $range = "Buy In (-$20 to $0)";
             $old_range = (($direction_up === 1) ? 'Buy In Price' : 'Profit Point');
         }
 
         if($current > $pp){
             $status = 4;
-            $range = "Small Profit ($0 - $75)";
+            $range = "Small Profit ($0 to $75)";
             $old_range = (($direction_up === 1) ? 'Profit Point' : 'Price Target');
         }
 
         if($current > $target){
             $status = 5;
-            $range = "Target Profit ($75 - $150)";
+            $range = "Target Profit ($75 to $150)";
             $old_range = (($direction_up === 1) ? 'Target Price' : 'Golden Target');
         }
 
         if($current > $golden){
             $status = 6;
-            $range = "Golden Profit ($150+)";
+            $range = "Golden Profit (Over $150)";
             $old_range = "Golden Target";
         }
 
