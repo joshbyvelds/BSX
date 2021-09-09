@@ -1,18 +1,9 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}BSX - Byvelds Stock Exchange{% endblock %}
+{% block title %}Joint Account - BSX - Byvelds Stock Exchange{% endblock %}
 
 {% block body %}
-    <a href="/watchlist" class="btn btn-primary">WATCH LIST</a>
-    <a href="/tenplan" class="btn btn-primary">TEN PERCENT PLAN</a>
-    <a href="/wizards" class="btn btn-primary">TICKER WIZARDS</a>
-    <a href="/dividends" class="btn btn-primary">DIVIDENDS</a>
-    <a href="/paper" class="btn btn-primary">PAPER TRADE</a>
-    <a href="/joint" class="btn btn-primary">JOINT</a>
-    <a href="/add" class="btn btn-primary">ADD</a>
-    <a href="/buy" class="btn btn-primary">BUY</a>
-    <a href="/sell" class="btn btn-primary">SELL</a>
-    <a href="/updatestockinfo" class="btn btn-warning">UPDATE EOD STOCK INFO FROM API</a>
+    <a href="/" class="btn btn-primary">Main</a>
 
     {% set oldStocks = [] %}
     <table class="table table-bordered table-responsive">

@@ -78,6 +78,7 @@
 
                             if(prev[i].length > 0){prev[i].forEach(function(e,i2){prev_icons += prev[i][i2]});};
                             $("#current_" + id).html('<i class="' + c + '"></i> ' + json.current + prev_icons);
+                            $(".status").removeClass("on");
                             $(".status.dead").removeClass("bad");
 
                             switch(json.status){

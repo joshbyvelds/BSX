@@ -342,6 +342,35 @@ class BSXController extends AbstractController
         return $response;
     }
 
+    /**
+     * @Route("/joint", name="joint")
+     */
+    public function jointAccountList(StockRepository $stocksRepo): Response
+    {
+        $stocks = $stocksRepo->findBy(array('type' => array(1, 3)));
+        $market_open = false;
+
+        date_default_timezone_set('America/New_York');
+
+        $currentTime = new \DateTime();
+        $opening_bell = \DateTime::createFromFormat('h:i a', "9:30 am");
+        $closing_bell = \DateTime::createFromFormat('h:i a', "4:00 pm");
+
+        $data = [
+            "CT" => $currentTime,
+            "OB" => $opening_bell,
+            "CB" => $closing_bell
+        ];
+
+        if ($currentTime > $opening_bell && $currentTime < $closing_bell){
+            $market_open = true;
+        }
+        return $this->render('bsx/joint.html.twig', [
+            'stocks' => $stocks,
+            'market_open' => $market_open,
+        ]);
+    }
+
      /**
      * @Route("/stock", name="stock")
      */
