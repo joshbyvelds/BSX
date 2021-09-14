@@ -62,9 +62,9 @@
                 $(".watchtime").each(function(i,e){
                     var id = $(this).attr("data-id");
                     var count = counter % (60 * parseFloat($(this).val()));
+                    var row = $("tr[data-id="+ id +"]");;
 
-                    console.log(count);
-                    console.log("I:" + i);
+                    console.log('Stock Watch Count['+ i +']: ' + count);
 
                     if(count === 0){
                         $.post("/watchlist/check", {id:id}, function(json){
@@ -78,27 +78,27 @@
 
                             if(prev[i].length > 0){prev[i].forEach(function(e,i2){prev_icons += prev[i][i2]});};
                             $("#current_" + id).html('<i class="' + c + '"></i> ' + json.current + prev_icons);
-                            $(".status").removeClass("on");
-                            $(".status.dead").removeClass("bad");
+                            row.find(".status").removeClass("on");
+                            row.find(".status.dead").removeClass("bad");
 
                             switch(json.status){
                                 case(1):
-                                    $(".status.dead").addClass("on bad");
+                                    row.find(".status.dead").addClass("on bad");
                                     break;
                                 case(2):
-                                    $(".status.dead").addClass("on");
+                                    row.find(".status.dead").addClass("on");
                                     break;
                                 case(3):
-                                    $(".status.buy").addClass("on");
+                                    row.find(".status.buy").addClass("on");
                                     break;
                                 case(4):
-                                    $(".status.pp").addClass("on");
+                                    row.find(".status.pp").addClass("on");
                                     break;
                                 case(5):
-                                    $(".status.target").addClass("on");
+                                    row.find(".status.target").addClass("on");
                                     break;
                                 case(6):
-                                    $(".status.golden").addClass("on");
+                                    row.find(".status.golden").addClass("on");
                                     break;
                             }
                         });
