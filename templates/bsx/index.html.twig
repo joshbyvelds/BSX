@@ -9,12 +9,14 @@
     <a href="/dividends" class="btn btn-primary">DIVIDENDS</a>
     <a href="/paper" class="btn btn-primary">PAPER TRADE</a>
     <a href="/joint" class="btn btn-primary">JOINT</a>
-    <a href="/add" class="btn btn-primary">ADD</a>
-    <a href="/buy" class="btn btn-primary">BUY</a>
-    <a href="/sell" class="btn btn-primary">SELL</a>
+    <a href="/add" class="btn btn-primary">ADD STOCK</a>
+    <a href="/buy" class="btn btn-primary">BUY STOCK</a>
+    <a href="/sell" class="btn btn-primary">SELL STOCK</a>
+    <a href="/addoption" class="btn btn-primary">ADD OPTION</a>
     <a href="/updatestockinfo" class="btn btn-warning">UPDATE EOD STOCK INFO FROM API</a>
 
     {% set oldStocks = [] %}
+    {% set oldOptions = [] %}
     <table class="table table-bordered table-responsive">
         <tr>
             <td colspan="24">CURRENT STOCKS</td>
@@ -100,13 +102,13 @@
                     <td data-shares="{{ stock.id }}">{{ stock.shares }}</td>
                     <td data-opening="{{ stock.id }}">${{ stock.openingPrice|number_format(2) }}</td>
                     <td>${{ stock.closingPrice|number_format(2) }}</td>
-                    <td><input type="text" class="current_price" placeholder="$0.00" data-id="{{ stock.id }}" value='{{ current_price }}'></td>
+                    <td><input type="text" class="current_price" data-type="1" placeholder="$0.00" data-id="{{ stock.id }}" value='{{ current_price }}'></td>
                     <td data-day-gl="{{ stock.id }}" class="gl_day {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
                     <td data-average="{{ stock.id }}">${{ stock.averagePrice|number_format(2) }}</td>
                     <td data-ave-gl="{{ stock.id }}" class="gl_ave {%if stock.shares == 0 %}no_total{% endif %}">$0.00</td>
                     <td data-pp={{ stock.id }}>$0.00</td>
                     <td data-p-gl="{{ stock.id }}" data-buys="{{ stock.buys }}" class="gl_p {%if stock.shares == 0 %}no_total{% endif %}" >$0.00/$0.00</td>
-                    <td><a href="https://www.google.com/finance/quote/{{stock.ticker}}">Google</a> <a href="https://finance.yahoo.com/quote/{{stock.ticker}}">Yahoo</a> <a href="https://www.marketbeat.com/stocks/TSE/{{stock.ticker}}/dividend/">Dividend</a></td>
+                    <td><a href="https://www.google.com/finance/quote/{{stock.ticker}}" target="_blank">Google</a> <a href="https://finance.yahoo.com/quote/{{stock.ticker}}" target="_blank">Yahoo</a> <a href="https://www.marketbeat.com/stocks/TSE/{{stock.ticker}}/dividend/" target="_blank">Dividend</a></td>
                 </tr>
                 {% if stock.notes %}
                 <tr>
@@ -132,21 +134,82 @@
         </tr>
 
         <tr>
-            <td colspan="24">OLD STOCKS</td>
+            <td colspan="24">CURRENT OPTIONS</td>
         </tr>
 
-         <tr>
+        <tr>
             <th></th>
             <th>Name</th>
             <th>Ticker</th>
             <th>First Bought</th>
             <th>Last Bought</th>
             <th>Last Sold</th>
-            <th>Type</th>
             <th>Currency</th>
-            <th>Sold</th>
-            <th>Total Dividends</th>
-            <th>Profit CDN/USD</th>
+            <th>Type</th>
+            <th>Contracts</th>
+            <th>Stock Price</th>
+            <th>Strike</th>
+            <th>Current</th>
+            <th>Average</th>
+            <th>Cost</th>
+            <th>Expires</th>
+            <th>Links</th>
+            <th colspan="8"></th>
+        </tr>
+
+        {% for option in options %}
+            {% if option.contracts == 0 %}
+                {% set oldOptions = oldOptions|merge([option]) %}
+            {% else %}
+            <tr data-id="{{ option.id }}">
+                <td {% if option.notes %}rowspan="2"{% endif %}><img src="/images/logos/{{ option.ticker }}.jpg" alt="" class="stock_table_logo"></td>
+                <td>{{ option.name }}</td>
+                <td>{{ option.ticker }}</td>
+                <td>{{ option.firstBought|date("m/d/Y") }}</td>
+                <td>{{ option.lastBought|date("m/d/Y") }}</td>
+                <td>{{ option.lastSold|date("m/d/Y") }}</td>
+                <td data-currency="{{ option.id }}">{% if option.currency == 1 %}<img class="stock_flag" src="images/canada_flag.png" alt="">{% else %}<img class="stock_flag" src="images/us_flag.png" alt="">{% endif %}</td>
+                <td>{{ option.type }}</td>
+                <td>{{ option.contracts }}</td>
+                <td><input type="text" class="stock_price" placeholder="$0.00" data-type="2" data-id="{{ option.id }}" value='{{ option.stockPrice|number_format(2) }}'></td>
+                <td>{{ option.strikePrice|number_format(2) }}</td>
+                <td><input type="text" class="option_price" placeholder="$0.00" data-id="{{ option.id }}" value='{{ option.currentPrice|number_format(2) }}'></td>
+                <td>{{ option.average|number_format(2) }}</td>
+                <td>{{ option.cost|number_format(2) }}</td>
+                <td>{{ option.expires|date("m/d/Y") }}</td>
+                <td><a href="http://opcalc.com/{{ option.profitCalcUrl }}" target="_blank">Profit</a><br /><a href="https://www.google.com/finance/quote/{{option.ticker}}" target="_blank">Google</a> <a href="https://finance.yahoo.com/quote/{{option.ticker}}" target="_blank">Yahoo</a></td>
+            </tr>
+                {% if option.notes %}
+                    <tr>
+                        <td colspan="20">
+                            {{ option.notes }}
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+
+        <tr>
+            <td colspan="24">OLD STOCKS</td>
+        </tr>
+
+        <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Ticker</th>
+            <th>First Bought</th>
+            <th>Last Bought</th>
+            <th>Last Sold</th>
+            <th>Currency</th>
+            <th>Type</th>
+            <th>Contracts</th>
+            <th>Stock Price</th>
+            <th>Strike</th>
+            <th>Current</th>
+            <th>Average</th>
+            <th>Cost</th>
+            <th>Expires</th>
+            <th>Links</th>
             <th colspan="8"></th>
         </tr>
 
@@ -208,6 +271,47 @@
             </tr>
         {% endfor %}
 
+        <tr>
+            <td colspan="24">OLD OPTIONS</td>
+        </tr>
+
+        <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Ticker</th>
+            <th>First Bought</th>
+            <th>Last Bought</th>
+            <th>Last Sold</th>
+            <th>Currency</th>
+            <th>Contracts</th>
+            <th>Current</th>
+            <th>Strike</th>
+            <th>Average</th>
+            <th>Cost</th>
+            <th>Expires</th>
+            <th>Current</th>
+            <th colspan="8"></th>
+        </tr>
+
+
+        {% for option in oldOptions %}
+            <tr data-id="{{ option.id }}">
+                <td {% if option.notes %}rowspan="2"{% endif %}><img src="/images/logos/{{ option.ticker }}.jpg" alt="" class="stock_table_logo"></td>
+                <td>{{ option.name }}</td>
+                <td>{{ option.ticker }}</td>
+                <td>{{ option.firstBought|date("m/d/Y") }}</td>
+                <td>{{ option.lastBought|date("m/d/Y") }}</td>
+                <td>{{ option.lastSold|date("m/d/Y") }}</td>
+                <td data-currency="{{ option.id }}">{% if option.currency == 1 %}<img class="stock_flag" src="images/canada_flag.png" alt="">{% else %}<img class="stock_flag" src="images/us_flag.png" alt="">{% endif %}</td>
+                <td>{{ option.contracts }}</td>
+                <td>{{ option.strikePrice|number_format(2) }}</td>
+                <td>{{ option.average|number_format(2) }}</td>
+                <td>{{ option.cost|number_format(2) }}</td>
+                <td>{{ option.expires|date("m/d/Y") }}</td>
+                <td><a href="http://opcalc.com/{{ option.calc_url }}"></a><a href="https://www.google.com/finance/quote/{{option.ticker}}">Google</a> <a href="https://finance.yahoo.com/quote/{{option.ticker}}">Yahoo</a></td>
+            </tr>
+        {% endfor %}
+
         {% set grand_sold_total =  grand_sold_total + sold_total %}
         {% set grand_dividend_total = grand_dividend_total + dividend_total %}
         {% set grand_profit_dividend_total = grand_profit_dividend_total + profit_dividend_total %}
@@ -248,9 +352,9 @@
         <ul>
             <li>Create Dividened Entity, Page and Form  ✔️</li>
             <li>Get Total Dividened Payment amount and add to homepage stock table column ✔️</li>
-            <li>Create a new column on table called Profit Point. it should indicate the price a stock needs be at in order to make a profit on a sale.</li>
+            <li>Create a new column on table called Profit Point. it should indicate the price a stock needs be at in order to make a profit on a sale. ✔️</li>
             <li>Set Buys property to 1 on stock entity when you add a stock</li>
-            <li>Increase Buys property by 1 when you buy more of a stock</li>
+            <li>Increase Buys property by 1 when you buy more of a stock ✔️</li>
             <li>Decrease Buys to zero when you sell all of a stock OR when you sell some shares of a stock above profit point</li>
         </ul>
     </article>

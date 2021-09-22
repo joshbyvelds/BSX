@@ -11,6 +11,7 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 use App\Entity\Stock;
+use App\Entity\Option;
 use App\Entity\PaperStock;
 use App\Entity\Dividend;
 use App\Entity\TenPlanWeek;
@@ -19,12 +20,14 @@ use App\Entity\WizardPlay;
 use App\Form\AddStockType;
 use App\Form\AddWatchStockType;
 use App\Form\AddPaperStockType;
+use App\Form\AddOptionType;
 use App\Form\BuyStockType;
 use App\Form\SellStockType;
 use App\Form\DividendType;
 use App\Form\TenPlanWeekType;
 use App\Form\WizardType;
 use App\Repository\StockRepository;
+use App\Repository\OptionRepository;
 use App\Repository\PaperStockRepository;
 use App\Repository\DividendRepository;
 use App\Repository\TenPlanWeekRepository;
@@ -45,9 +48,10 @@ class BSXController extends AbstractController
     /**
      * @Route("/", name="index")
      */
-    public function index(StockRepository $stocksRepo): Response
+    public function index(StockRepository $stocksRepo, OptionRepository $optionsRepo): Response
     {
         $stocks = $stocksRepo->findAll();
+        $options = $optionsRepo->findAll();
         $market_open = false;
 
         date_default_timezone_set('America/New_York');
@@ -78,9 +82,12 @@ class BSXController extends AbstractController
         return $this->render('bsx/index.html.twig', [
             'controller_name' => 'BSXController',
             'stocks' => $stocks,
+            'options' => $options,
             'market_open' => $market_open,
         ]);
     }
+
+    /////////////////////// STOCKS ///////////////////////////////
 
     /**
      * @Route("/updatestockinfo", name="update_stock_info")
@@ -329,18 +336,90 @@ class BSXController extends AbstractController
     /**
      * @Route("/update", name="update")
      */
-    public function update (StockRepository $repo, Request $request) {
+    public function update (StockRepository $Srepo, OptionRepository $Orepo, Request $request) {
         $em = $this->getDoctrine()->getManager();
         $id = $request->get('id');
+        $type = $request->get('type');
         $price = $request->get('price');
-        $stock = $repo->findOneBy(['id' => $id]);
-        $stock->setCurrentPrice((float)$price);
+
+        if($type === "1"){
+            $stock = $Srepo->findOneBy(['id' => $id]);
+            $stock->setCurrentPrice((float)$price);
+        } 
+        
+        if($type === "2") {
+            $option = $Orepo->findOneBy(['id' => $id]);
+            $option->setStockPrice((float)$price);
+        }
+
+        if($type === "3") {
+            $option = $Orepo->findOneBy(['id' => $id]);
+            $option->setCurrentPrice((float)$price);
+        }
+
         $em->flush();
 
         $response = new Response(json_encode(['success' => 1]));
         $response->headers->set('Content-Type', 'application/json');
         return $response;
     }
+
+    /////////////////// OPTIONS ////////////////////////////
+
+        /**
+     * @Route("/addoption", name="add_option")
+     */
+    public function addOption(Request $request): Response
+    {
+        $option = new Option();
+        
+        $form = $this->createForm(AddOptionType::class, $option);
+        
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()){
+            $data = $form->getData();
+            $option->setLastBought($data->getFirstBought());
+            if($data->getBuyCurrency() === 1)
+            {
+                if($data->getCurrency() === 1){
+                    $option->setProfitCan(($data->getCost()) * -1);
+                    $option->setProfitUsd(0);
+                }
+
+                if($data->getCurrency() === 2){
+                    $option->setProfitCan((($data->getCost()) * $this->USDtoCANBuy) * -1);
+                    $option->setProfitUsd(0);
+                }
+            }
+
+            if($data->getBuyCurrency() === 2)
+            {
+                if($data->getCurrency() === 1){
+                    $option->setProfitCan(0);
+                    $option->setProfitUsd((($data->getCost()) * $this->CANtoUSDBuy) * -1);
+                }
+
+                if($data->getCurrency() === 2){
+                    $option->setProfitCan(0);
+                    $option->setProfitUsd(($data->getCost()) * -1);
+                }
+            }
+
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($option);
+            $em->flush();
+
+            return $this->redirectToRoute('index');
+        }
+
+        return $this->render('bsx/forms/add_option.html.twig', [
+            'controller_name' => 'BSXController',
+            'form' => $form->createView(),
+        ]);
+    }
+
+    ///////////////// FEATURE PAGES ///////////////////////
 
     /**
      * @Route("/joint", name="joint")
@@ -689,6 +768,7 @@ class BSXController extends AbstractController
         $target = $stock->getTarget();
         $golden = $stock->getGolden();
         $prev_status = $stock->getStatus();
+        $type = $stock->getType();
 
         /*
         * --- Get Current Price from internet ---
@@ -727,38 +807,76 @@ class BSXController extends AbstractController
             $direction_up = 2;
         }
 
-        if($current > $dead){
-            $status = 2;
-            $range = "Dead Stop Warning (-$20 to -$35)";
-            $old_range = (($direction_up === 1) ? 'Dead Stop' : 'Buy In Price');
-        } else {
+        if($type === 1){
+            if($current > $dead){
+                $status = 2;
+                $range = "Dead Stop Warning (-$20 to -$35)";
+                $old_range = (($direction_up === 1) ? 'Dead Stop' : 'Buy In Price');
+            } else {
+                $status = 1;
+                $range = "Below Dead Stop (-$35+)";
+                $old_range = "Dead Stop";
+            }
+
+            if($current > $buyin){
+                $status = 3;
+                $range = "Buy In (-$20 to $0)";
+                $old_range = (($direction_up === 1) ? 'Buy In Price' : 'Profit Point');
+            }
+
+            if($current > $pp){
+                $status = 4;
+                $range = "Small Profit ($0 to $75)";
+                $old_range = (($direction_up === 1) ? 'Profit Point' : 'Price Target');
+            }
+
+            if($current > $target){
+                $status = 5;
+                $range = "Target Profit ($75 to $150)";
+                $old_range = (($direction_up === 1) ? 'Target Price' : 'Golden Target');
+            }
+
+            if($current > $golden){
+                $status = 6;
+                $range = "Golden Profit (Over $150)";
+                $old_range = "Golden Target";
+            }
+        }
+
+        if($type === 2) {
             $status = 1;
-            $range = "Below Dead Stop (-$35+)";
-            $old_range = "Dead Stop";
+            $range = "Death";
+            $old_range = "Buy In";
+
+            if($current > $buyin){
+                $status = 3;
+                $range = "Buy In";
+                $old_range =  (($direction_up === 1) ? 'Death' : 'Buy In');
+            }
+
+            if($current > $pp){
+                $status = 4;
+                $range = "Strike";
+                $old_range = 'Buy In';
+            }
         }
 
-        if($current > $buyin){
-            $status = 3;
-            $range = "Buy In (-$20 to $0)";
-            $old_range = (($direction_up === 1) ? 'Buy In Price' : 'Profit Point');
-        }
+        if($type === 3) {
+            $status = 1;
+            $range = "Death";
+            $old_range = "Buy In";
 
-        if($current > $pp){
-            $status = 4;
-            $range = "Small Profit ($0 to $75)";
-            $old_range = (($direction_up === 1) ? 'Profit Point' : 'Price Target');
-        }
+            if($current < $buyin){
+                $status = 3;
+                $range = "Buy In";
+                $old_range =  (($direction_up === 1) ? 'Death' : 'Buy In');
+            }
 
-        if($current > $target){
-            $status = 5;
-            $range = "Target Profit ($75 to $150)";
-            $old_range = (($direction_up === 1) ? 'Target Price' : 'Golden Target');
-        }
-
-        if($current > $golden){
-            $status = 6;
-            $range = "Golden Profit (Over $150)";
-            $old_range = "Golden Target";
+            if($current < $pp){
+                $status = 4;
+                $range = "Strike";
+                $old_range = 'Buy In';
+            }
         }
 
         if($status !== $prev_status){

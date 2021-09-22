@@ -2,34 +2,47 @@
 
 namespace App\Form;
 
-use App\Entity\Stock;
+use App\Entity\Option;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class AddWatchStockType extends AbstractType
+class AddOptionType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
             ->add('name')
             ->add('ticker')
-            ->add('url')
-            ->add('current')
+            ->add('first_bought')
             ->add('type', ChoiceType::class, [
                 'choices'  => [
-                    'Stock' => 1,
-                    'Call Option' => 2,
-                    'Put Option' => 3,
+                    'Long Call' => 'Long Call',
+                    'Long Put' => 'Long Put',
                 ],
             ])
-            ->add('deadstop')
-            ->add('buyin')
-            ->add('profitpoint')
-            ->add('target')
-            ->add('golden')
+            ->add('contracts')
+            ->add('strike_price')
+            ->add('average')
+            ->add('cost')
+            ->add('expires')
+            ->add('current_price')
+            ->add('stock_price')
+            ->add('buy_currency', ChoiceType::class, [
+                'choices'  => [
+                    'CAD' => 1,
+                    'USD' => 2,
+                ],
+            ])
+            ->add('currency', ChoiceType::class, [
+                'choices'  => [
+                    'CAD' => 1,
+                    'USD' => 2,
+                ],
+            ])
+            ->add('profit_calc_url')
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'
@@ -41,7 +54,7 @@ class AddWatchStockType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            //'data_class' => Stock::class,
+            'data_class' => Option::class,
         ]);
     }
 }
