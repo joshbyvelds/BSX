@@ -69,6 +69,13 @@
             </tr>
         {% endfor %}
 
+        <tr>
+            <td></td>
+            <td colspan="4">Settings</td>
+            <td><input class="master" id="master_time_input" type="number" value='1' /></td>
+            <td></td>
+        </tr>
+
 
     </table>
     <a href="/watchlist/add" class="btn btn-primary">ADD</a>
@@ -85,7 +92,11 @@
 
         $(function(){
 
-        
+            $("#master_time_input").on('change', function(){
+                $(".watchtime").each(function(e,i){
+                   $(this).val($("#master_time_input").val());
+                });
+            });
 
              $(".watchtime").each(function(e,i){
                  prev.push([]);
@@ -153,6 +164,7 @@
 
             checkStock();
         });
+        
 
     </script>
 
