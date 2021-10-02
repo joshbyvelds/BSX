@@ -81,6 +81,7 @@
     var prev = [];
     var prev_icons = "";
     var max_icons = 12;
+    var firstRun = true;
 
         $(function(){
 
@@ -106,7 +107,7 @@
                     var checkSecond = (60 * parseFloat($(this).val()));
                     var row = $("tr[data-id="+ id +"]");
 
-                    if((diff - last) > checkSecond){
+                    if((diff - last) > checkSecond || firstRun){
                         $(this).attr("data-last", diff);
                         $.post("/watchlist/check", {id:id}, function(json){
                             var c = (json.dir_up === 2) ? "bi arrow grey bi-dash-square-fill" : (json.dir_up === 1) ? "bi arrow green bi-arrow-up-square-fill" : "bi arrow red bi-arrow-down-square-fill";
@@ -146,6 +147,7 @@
                     }
                 });
 
+                firstRun = false;
                 setTimeout(checkStock,1000)
             }
 
