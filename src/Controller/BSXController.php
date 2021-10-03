@@ -16,9 +16,11 @@ use App\Entity\PaperStock;
 use App\Entity\Dividend;
 use App\Entity\TenPlanWeek;
 use App\Entity\WatchStock;
+use App\Entity\WatchOption;
 use App\Entity\WizardPlay;
 use App\Form\AddStockType;
 use App\Form\AddWatchStockType;
+use App\Form\AddWatchOptionType;
 use App\Form\AddPaperStockType;
 use App\Form\AddOptionType;
 use App\Form\BuyStockType;
@@ -33,6 +35,7 @@ use App\Repository\DividendRepository;
 use App\Repository\TenPlanWeekRepository;
 use App\Repository\WizardPlayRepository;
 use App\Repository\WatchStockRepository;
+use App\Repository\WatchOptionRepository;
 
 use Joli\JoliNotif\Notification;
 use Joli\JoliNotif\NotifierFactory;
@@ -336,7 +339,8 @@ class BSXController extends AbstractController
     /**
      * @Route("/update", name="update")
      */
-    public function update (StockRepository $Srepo, OptionRepository $Orepo, Request $request) {
+    public function update (StockRepository $Srepo, OptionRepository $Orepo, Request $request)
+    {
         $em = $this->getDoctrine()->getManager();
         $id = $request->get('id');
         $type = $request->get('type');
@@ -509,7 +513,8 @@ class BSXController extends AbstractController
     /**
      * @Route("/wizards/updateplay", name="wizard_update")
      */
-    public function updateWizard (WizardPlayRepository $repo, Request $request) {
+    public function updateWizard (WizardPlayRepository $repo, Request $request)
+    {
         $em = $this->getDoctrine()->getManager();
 
         $postData = json_decode($request->getContent());
@@ -701,19 +706,21 @@ class BSXController extends AbstractController
     /**
      * @Route("/watchlist", name="watchlist")
      */
-    public function watchlist(WatchStockRepository $watchstockRepo): Response
+    public function watchlist(WatchStockRepository $watchStockRepo, WatchOptionRepository $watchOptionRepo): Response
     {
-        $watchlist = $watchstockRepo->findAll();
+        $stocks = $watchStockRepo->findAll();
+        $options = $watchOptionRepo->findAll();
         
         return $this->render('bsx/watchlist.html.twig', [
-            'watchlist' => $watchlist
+            'stocks' => $stocks,
+            'options' => $options
         ]);
     }
 
     /**
-     * @Route("/watchlist/add", name="watch_add")
+     * @Route("/watchlist/addstock", name="watch_stock_add")
      */
-    public function addWatchTarget(Request $request): Response
+    public function addWatchStock(Request $request): Response
     {
         $stock = new WatchStock();
         $form = $this->createForm(AddWatchStockType::class, $stock);
@@ -722,6 +729,7 @@ class BSXController extends AbstractController
 
         if($form->isSubmitted()){
             $stock->setStatus(0);
+            $stock->setCurrent(0);
             $em = $this->getDoctrine()->getManager();
             $em->persist($stock);
             $em->flush();
@@ -729,27 +737,88 @@ class BSXController extends AbstractController
             return $this->redirectToRoute('watchlist');
         }
 
-        return $this->render('bsx/forms/watch.html.twig', [
+        return $this->render('bsx/forms/watchstock.html.twig', [
             'controller_name' => 'BSXController',
             'form' => $form->createView(),
         ]);
     }
 
      /**
-     * @Route("/watchlist/delete/{id}", name="watch_delete", requirements={"id"="\d+"})
+     * @Route("/watchlist/addoption", name="watch_option_add")
      */
-    public function deleteWatch(WatchStock $watchstock): Response
+    public function addWatchOption(Request $request): Response
+    {
+        $option = new WatchOption();
+        $form = $this->createForm(AddWatchOptionType::class, $option);
+        
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()){
+            $option->setStatus(0);
+            $option->setCurrent(0);
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($option);
+            $em->flush();
+
+            return $this->redirectToRoute('watchlist');
+        }
+
+        return $this->render('bsx/forms/watchoption.html.twig', [
+            'controller_name' => 'BSXController',
+            'form' => $form->createView(),
+        ]);
+    }
+
+     /**
+     * @Route("/watchlist/stock/delete/{id}", name="watch_stock_delete", requirements={"id"="\d+"})
+     */
+    public function deleteWatchStock(WatchStock $stock): Response
     {
         $em = $this->getDoctrine()->getManager();
-        $em->remove($watchstock);
+        $em->remove($stock);
         $em->flush();
         return $this->redirectToRoute('watchlist');
     }
 
     /**
-     * @Route("/watchlist/check", name="watch_check")
+     * @Route("/watchlist/option/delete/{id}", name="watch_option_delete", requirements={"id"="\d+"})
      */
-    public function watchCheck(WatchStockRepository $repo, Request $request)
+    public function deleteWatchOption(WatchOption $option): Response
+    {
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($option);
+        $em->flush();
+        return $this->redirectToRoute('watchlist');
+    }
+
+    /**
+     * @Route("/watchlist/option/profit", name="watch_option_profit")
+     */
+    public function updateWatchOptionProfit (WatchOptionRepository $repo, Request $request)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $postData = json_decode($request->getContent());
+        $id = $request->get('id');
+        $dead = $request->get('deadstop');
+        $pp = $request->get('pp');
+        $target = $request->get('target');
+        $golden = $request->get('golden');
+        $stock = $repo->findOneBy(['id' => $id]);
+        $stock->setDeadstop((float)$dead);
+        $stock->setProfit((float)$pp);
+        $stock->setTarget((float)$target);
+        $stock->setGolden((float)$golden);
+        $em->flush();
+
+        $response = new Response(json_encode(['success' => 1]));
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
+    }
+
+    /**
+     * @Route("/watchlist/stock/check", name="watch_stock_check")
+     */
+    public function watchStockCheck(WatchStockRepository $repo, Request $request)
     {
         $em = $this->getDoctrine()->getManager();
         $direction_up = 0;
@@ -768,7 +837,6 @@ class BSXController extends AbstractController
         $target = $stock->getTarget();
         $golden = $stock->getGolden();
         $prev_status = $stock->getStatus();
-        $type = $stock->getType();
 
         /*
         * --- Get Current Price from internet ---
@@ -807,42 +875,42 @@ class BSXController extends AbstractController
             $direction_up = 2;
         }
 
-        if($type === 1){
-            if($current > $dead){
-                $status = 2;
-                $range = "Dead Stop Warning (-$20 to -$35)";
-                $old_range = (($direction_up === 1) ? 'Dead Stop' : 'Buy In Price');
-            } else {
-                $status = 1;
-                $range = "Below Dead Stop (-$35+)";
-                $old_range = "Dead Stop";
-            }
 
-            if($current > $buyin){
-                $status = 3;
-                $range = "Buy In (-$20 to $0)";
-                $old_range = (($direction_up === 1) ? 'Buy In Price' : 'Profit Point');
-            }
-
-            if($current > $pp){
-                $status = 4;
-                $range = "Small Profit ($0 to $75)";
-                $old_range = (($direction_up === 1) ? 'Profit Point' : 'Price Target');
-            }
-
-            if($current > $target){
-                $status = 5;
-                $range = "Target Profit ($75 to $150)";
-                $old_range = (($direction_up === 1) ? 'Target Price' : 'Golden Target');
-            }
-
-            if($current > $golden){
-                $status = 6;
-                $range = "Golden Profit (Over $150)";
-                $old_range = "Golden Target";
-            }
+        if($current > $dead){
+            $status = 2;
+            $range = "Dead Stop Warning (-$20 to -$35)";
+            $old_range = (($direction_up === 1) ? 'Dead Stop' : 'Buy In Price');
+        } else {
+            $status = 1;
+            $range = "Below Dead Stop (-$35+)";
+            $old_range = "Dead Stop";
         }
 
+        if($current > $buyin){
+            $status = 3;
+            $range = "Buy In (-$20 to $0)";
+            $old_range = (($direction_up === 1) ? 'Buy In Price' : 'Profit Point');
+        }
+
+        if($current > $pp){
+            $status = 4;
+            $range = "Small Profit ($0 to $75)";
+            $old_range = (($direction_up === 1) ? 'Profit Point' : 'Price Target');
+        }
+
+        if($current > $target){
+            $status = 5;
+            $range = "Target Profit ($75 to $150)";
+            $old_range = (($direction_up === 1) ? 'Target Price' : 'Golden Target');
+        }
+
+        if($current > $golden){
+            $status = 6;
+            $range = "Golden Profit (Over $150)";
+            $old_range = "Golden Target";
+        }
+        
+        /*
         if($type === 2) {
             $status = 1;
             $range = "Death";
@@ -877,6 +945,133 @@ class BSXController extends AbstractController
                 $range = "Strike";
                 $old_range = 'Buy In';
             }
+        }
+        */
+
+        if($status !== $prev_status){
+            $stock->setStatus($status);
+            
+            $notifier = NotifierFactory::create();
+
+            // // Create your notification
+            $notification =
+                (new Notification())
+                ->setTitle($ticker . ' Status Change')
+                ->setBody($name . ' stock price is now' . (($direction_up === 1) ? ' above ' : ' below ') . $old_range . '. New Range is '. $range . ' ('. $status .')')
+                ->setIcon(__DIR__.'/../../public/images/logos/'. $ticker. '.jpg')
+            ;
+    
+            // // Send it
+            $notifier->send($notification);
+            //*/
+    
+        }
+
+
+        $stock->setCurrent((float)$current);
+        $em->flush();
+
+
+        $response = new Response(json_encode(['success' => 1, 'id' => $id, 'status' => $status, 'dir_up' => $direction_up, 'url' => $url, 'current' => $current]));
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
+    }
+
+    /**
+     * @Route("/watchlist/option/check", name="watch_option_check")
+     */
+    public function watchOptionCheck(WatchOptionRepository $repo, Request $request)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $direction_up = 0;
+
+        $postData = json_decode($request->getContent());
+        $id = $request->get('id');
+        $stock = $repo->findOneBy(['id' => $id]);
+        
+        $type = $stock->getType();
+        $url = $stock->getUrl();
+        $name = $stock->getName();
+        $ticker = $stock->getTicker();
+        $prev = $stock->getCurrent();
+        $strike = $stock->getStrike();
+        $dead = $stock->getDeadstop();
+        $buyin = $stock->getBuyin();
+        $pp = $stock->getProfit();
+        $target = $stock->getTarget();
+        $golden = $stock->getGolden();
+        $prev_status = $stock->getStatus();
+
+        /*
+        * --- Get Current Price from internet ---
+        */
+
+        $content = file_get_contents($url);
+        // checks if the content we're receiving isn't empty, to avoid the warning
+        if ( empty( $content ) ) {
+            return false;
+        }
+
+        // converts all special characters to utf-8
+        $content = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
+
+        // creating new document
+        $doc = new \DOMDocument('1.0', 'utf-8');
+
+        //turning off some errors
+        libxml_use_internal_errors(true);
+
+        // it loads the content without adding enclosing html/body tags and also the doctype declaration
+        $doc->LoadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
+        $doc->validateOnParse = true;
+        $doc->loadHtml($content);
+        $xpath = new \DOMXPath($doc);
+        $current = (float)substr($xpath->query('//meta[@name="price"]')[0]->attributes[1]->value, 1);
+
+        /*
+        * --- Update Status ---
+        */ 
+
+        $direction_up = ($current > $prev) ? 1 : 0;
+
+        if($current === $prev){
+            $direction_up = 2;
+        }
+
+
+        if($current > $dead){
+            $status = 2;
+            $range = "Dead Stop Warning (-$20 to -$35)";
+            $old_range = (($direction_up === 1) ? 'Dead Stop' : 'Buy In Price');
+        } else {
+            $status = 1;
+            $range = "Below Dead Stop (-$35+)";
+            $old_range = "Dead Stop";
+        }
+
+        if($current > $buyin){
+            $status = 3;
+            $range = "Buy In (-$20 to $0)";
+            $old_range = (($direction_up === 1) ? 'Buy In Price' : 'Profit Point');
+        }
+
+        if($current > $pp){
+            $status = 4;
+            $range = "Small Profit ($0 to $75)";
+            $old_range = (($direction_up === 1) ? 'Profit Point' : 'Price Target');
+        }
+
+        if($current > $target){
+            $status = 5;
+            $range = "Target Profit ($75 to $150)";
+            $old_range = (($direction_up === 1) ? 'Target Price' : 'Golden Target');
+        }
+
+        if($current > $golden){
+            $status = 6;
+            $range = "Golden Profit (Over $150)";
+            $old_range = "Golden Target";
         }
 
         if($status !== $prev_status){

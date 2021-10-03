@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\WatchStockRepository;
+use App\Repository\WatchOptionRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass=WatchStockRepository::class)
+ * @ORM\Entity(repositoryClass=WatchOptionRepository::class)
  */
-class WatchStock
+class WatchOption
 {
     /**
      * @ORM\Id
@@ -23,6 +23,21 @@ class WatchStock
     private $name;
 
     /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $ticker;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $url;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $type;
+
+    /**
      * @ORM\Column(type="float")
      */
     private $current;
@@ -32,7 +47,7 @@ class WatchStock
      */
     private $deadstop;
 
-    /**
+        /**
      * @ORM\Column(type="float")
      */
     private $buyin;
@@ -40,7 +55,12 @@ class WatchStock
     /**
      * @ORM\Column(type="float")
      */
-    private $profitpoint;
+    private $profit;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $strike;
 
     /**
      * @ORM\Column(type="float")
@@ -51,16 +71,6 @@ class WatchStock
      * @ORM\Column(type="float")
      */
     private $golden;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $url;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $ticker;
 
     /**
      * @ORM\Column(type="integer")
@@ -80,6 +90,42 @@ class WatchStock
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getTicker(): ?string
+    {
+        return $this->ticker;
+    }
+
+    public function setTicker(string $ticker): self
+    {
+        $this->ticker = $ticker;
+
+        return $this;
+    }
+
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    public function setUrl(string $url): self
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): self
+    {
+        $this->type = $type;
 
         return $this;
     }
@@ -120,14 +166,26 @@ class WatchStock
         return $this;
     }
 
-    public function getProfitpoint(): ?float
+    public function getProfit(): ?float
     {
-        return $this->profitpoint;
+        return $this->profit;
     }
 
-    public function setProfitpoint(float $profitpoint): self
+    public function setProfit(float $profit): self
     {
-        $this->profitpoint = $profitpoint;
+        $this->profit = $profit;
+
+        return $this;
+    }
+
+    public function getStrike(): ?float
+    {
+        return $this->strike;
+    }
+
+    public function setStrike(float $strike): self
+    {
+        $this->strike = $strike;
 
         return $this;
     }
@@ -152,30 +210,6 @@ class WatchStock
     public function setGolden(float $golden): self
     {
         $this->golden = $golden;
-
-        return $this;
-    }
-
-    public function getUrl(): ?string
-    {
-        return $this->url;
-    }
-
-    public function setUrl(string $url): self
-    {
-        $this->url = $url;
-
-        return $this;
-    }
-
-    public function getTicker(): ?string
-    {
-        return $this->ticker;
-    }
-
-    public function setTicker(string $ticker): self
-    {
-        $this->ticker = $ticker;
 
         return $this;
     }

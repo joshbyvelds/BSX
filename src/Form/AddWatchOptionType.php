@@ -2,14 +2,13 @@
 
 namespace App\Form;
 
-use App\Entity\Stock;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class AddWatchStockType extends AbstractType
+class AddWatchOptionType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -17,9 +16,17 @@ class AddWatchStockType extends AbstractType
             ->add('name')
             ->add('ticker')
             ->add('url')
+            ->add('type', ChoiceType::class, [
+                'choices'  => [
+                    'Long Call' => 1,
+                    'Long Put' => 2,
+                ],
+            ])
+
             ->add('deadstop')
             ->add('buyin')
-            ->add('profitpoint')
+            ->add('profit')
+            ->add('strike')
             ->add('target')
             ->add('golden')
             ->add('save', SubmitType::class, [
