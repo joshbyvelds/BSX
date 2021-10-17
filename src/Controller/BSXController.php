@@ -25,6 +25,7 @@ use App\Form\AddPaperStockType;
 use App\Form\AddOptionType;
 use App\Form\BuyStockType;
 use App\Form\SellStockType;
+use App\Form\SellOptionType;
 use App\Form\DividendType;
 use App\Form\TenPlanWeekType;
 use App\Form\WizardType;
@@ -43,6 +44,7 @@ use Joli\JoliNotif\NotifierFactory;
 class BSXController extends AbstractController
 {
     private $trading_fee = 9.95;
+    private $contract_fee = 1.25;
     private $CANtoUSDBuy = 0.8378;
     private $USDtoCANBuy = 1.2286;
     private $CANtoUSDSell = 0.8139;
@@ -199,9 +201,11 @@ class BSXController extends AbstractController
             return $this->redirectToRoute('index');
         }
 
-        return $this->render('bsx/forms/add.html.twig', [
+        return $this->render('bsx/form.html.twig', [
             'controller_name' => 'BSXController',
             'form' => $form->createView(),
+            'title' => 'BSX - Add Stock',
+            'headline' => 'Add Stock',
         ]);
     }
 
@@ -265,9 +269,11 @@ class BSXController extends AbstractController
         }
 
 
-        return $this->render('bsx/forms/buy.html.twig', [
+        return $this->render('bsx/form.html.twig', [
             'controller_name' => 'BSXController',
             'form' => $form->createView(),
+            'title' => 'BSX - Buy Stock',
+            'headline' => 'Buy Stock',
         ]);
     }
 
@@ -330,9 +336,11 @@ class BSXController extends AbstractController
             }
         }
 
-        return $this->render('bsx/forms/sell.html.twig', [
+        return $this->render('bsx/form.html.twig', [
             'controller_name' => 'BSXController',
             'form' => $form->createView(),
+            'title' => 'BSX - Sell Stock',
+            'headline' => 'Sell Stock',
         ]);
     }
 
@@ -370,7 +378,7 @@ class BSXController extends AbstractController
 
     /////////////////// OPTIONS ////////////////////////////
 
-        /**
+    /**
      * @Route("/addoption", name="add_option")
      */
     public function addOption(Request $request): Response
@@ -383,7 +391,6 @@ class BSXController extends AbstractController
 
         if($form->isSubmitted()){
             $data = $form->getData();
-            $option->setLastBought($data->getFirstBought());
             if($data->getBuyCurrency() === 1)
             {
                 if($data->getCurrency() === 1){
@@ -417,9 +424,79 @@ class BSXController extends AbstractController
             return $this->redirectToRoute('index');
         }
 
-        return $this->render('bsx/forms/add_option.html.twig', [
+        return $this->render('bsx/form.html.twig', [
             'controller_name' => 'BSXController',
             'form' => $form->createView(),
+            'title' => 'BSX - S Option',
+            'headline' => 'Add Option',
+        ]);
+    }
+
+    /**
+     * @Route("/selloption", name="sell_option")
+     */
+    public function sellOption(Request $request): Response
+    {
+        
+        $form = $this->createForm(SellOptionType::class);
+
+        if ($request->isMethod('POST')) {
+            $form->handleRequest($request);
+    
+            if ($form->isSubmitted() && $form->isValid()) {
+                $em = $this->getDoctrine()->getManager();
+                $data = $form->getData();
+                $option = $form->get("ticker")->getData();
+
+
+                $option->sellContracts($data['contracts']);
+                $option->setSold($data['sell_date']);                
+                $sell_amount = ($data['contracts'] * $data['price']) * 100;
+                $contract_fee_total = $this->contract_fee * $data['contracts'];
+
+
+
+                // Adjust Profit
+                if($data['sell_currency'] === 1)
+                {
+                  
+                    if($option->getCurrency() === 1){
+                        $option->addProfitCan(($sell_amount - $this->trading_fee - $contract_fee_total));
+                    }
+
+                    if($option->getCurrency() === 2){
+                        $option->addProfitCan((($sell_amount - $this->trading_fee - $contract_fee_total) * $this->USDtoCANSell));
+                    }
+                    
+                }
+
+                if($data['sell_currency'] === 2)
+                {
+                    if($option->getCurrency() === 1){
+                        $option->addProfitUsd((($sell_amount - $this->trading_fee - $contract_fee_total) * $this->CANtoUSDSell));
+                    }
+
+                    if($option->getCurrency() === 2){
+                        $option->addProfitUsd(($sell_amount - $this->trading_fee - $contract_fee_total));
+                    }
+                }
+
+                if($option->getContracts() === 0){
+                    $option->setAverage(0);
+                }
+
+                $em->persist($option);
+                $em->flush();
+
+                return $this->redirectToRoute('index');
+            }
+        }
+
+        return $this->render('bsx/form.html.twig', [
+            'controller_name' => 'BSXController',
+            'form' => $form->createView(),
+            'title' => 'BSX - Sell Option',
+            'headline' => 'Sell Option',
         ]);
     }
 
@@ -465,6 +542,46 @@ class BSXController extends AbstractController
     }
 
     /**
+     * @Route("/tenplan", name="ten")
+     */
+    public function tenPlan(TenPlanWeekRepository $tenplanRepo): Response
+    {
+        $tenplans = $tenplanRepo->findAll();
+        
+        return $this->render('bsx/tenplan.html.twig', [
+            'weeks' => $tenplans
+        ]);
+    }
+
+    /**
+     * @Route("/tenplan/add", name="ten_add")
+     */
+    public function tenPlanAdd(Request $request): Response
+    {
+        $week = new TenPlanWeek();
+        $form = $this->createForm(TenPlanWeekType::class, $week);
+        
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()){
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($week);
+            $em->flush();
+
+            return $this->redirectToRoute('ten');
+        }
+
+        return $this->render('bsx/form.html.twig', [
+            'controller_name' => 'BSXController',
+            'form' => $form->createView(),
+            'title' => 'BSX - Ten Percent Plan - Add Week',
+            'headline' => 'Ten Percent Plan - Add Week',
+        ]);
+    }
+
+    ///////////////// TICKER WIZARDS ///////////////////////
+
+    /**
      * @Route("/wizards", name="wizards")
      */
     public function wizards(wizardPlayRepository $wizardsRepo): Response
@@ -493,9 +610,11 @@ class BSXController extends AbstractController
             return $this->redirectToRoute('wizards');
         }
 
-        return $this->render('bsx/forms/wizard.html.twig', [
+        return $this->render('bsx/form.html.twig', [
             'controller_name' => 'BSXController',
             'form' => $form->createView(),
+            'title' => 'BSX - Add Wizard',
+            'headline' => 'Add Wizard Play',
         ]);
     }
 
@@ -529,41 +648,7 @@ class BSXController extends AbstractController
         return $response;
     }
 
-    /**
-     * @Route("/tenplan", name="ten")
-     */
-    public function tenPlan(TenPlanWeekRepository $tenplanRepo): Response
-    {
-        $tenplans = $tenplanRepo->findAll();
-        
-        return $this->render('bsx/tenplan.html.twig', [
-            'weeks' => $tenplans
-        ]);
-    }
-
-    /**
-     * @Route("/tenplan/add", name="ten_add")
-     */
-    public function tenPlanAdd(Request $request): Response
-    {
-        $week = new TenPlanWeek();
-        $form = $this->createForm(TenPlanWeekType::class, $week);
-        
-        $form->handleRequest($request);
-
-        if($form->isSubmitted()){
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($week);
-            $em->flush();
-
-            return $this->redirectToRoute('ten');
-        }
-
-        return $this->render('bsx/forms/tenplan.html.twig', [
-            'controller_name' => 'BSXController',
-            'form' => $form->createView(),
-        ]);
-    }
+    ///////////////// DIVIDENDS ///////////////////////
 
     /**
      * @Route("/dividends", name="dividend")
@@ -607,11 +692,16 @@ class BSXController extends AbstractController
             //return $this->redirectToRoute('index');
         }
 
-        return $this->render('bsx/forms/dividend.html.twig', [
+        return $this->render('bsx/form.html.twig', [
             'controller_name' => 'BSXController',
             'form' => $form->createView(),
+            'title' => 'BSX - Add Dividend Payment',
+            'headline' => 'Add Dividend Payment',
         ]);
     }
+
+    ///////////////// PAPER TRADING ///////////////////////
+
 
         /**
      * @Route("/paper", name="paper")
@@ -686,9 +776,11 @@ class BSXController extends AbstractController
             return $this->redirectToRoute('paper');
         }
 
-        return $this->render('bsx/forms/paper.add.html.twig', [
+        return $this->render('bsx/form.html.twig', [
             'controller_name' => 'BSXController',
             'form' => $form->createView(),
+            'title' => 'BSX - Add Paper Stock',
+            'headline' => 'Add Paper Stock',
         ]);
     }
 
@@ -702,6 +794,9 @@ class BSXController extends AbstractController
         $em->flush();
         return $this->redirectToRoute('paper');
     }
+
+    ///////////////// WATCHLIST ///////////////////////
+
 
     /**
      * @Route("/watchlist", name="watchlist")
@@ -737,9 +832,11 @@ class BSXController extends AbstractController
             return $this->redirectToRoute('watchlist');
         }
 
-        return $this->render('bsx/forms/watchstock.html.twig', [
+        return $this->render('bsx/form.html.twig', [
             'controller_name' => 'BSXController',
             'form' => $form->createView(),
+            'title' => 'BSX - Watch Stock',
+            'headline' => 'Watch Stock',
         ]);
     }
 
@@ -763,9 +860,11 @@ class BSXController extends AbstractController
             return $this->redirectToRoute('watchlist');
         }
 
-        return $this->render('bsx/forms/watchoption.html.twig', [
+        return $this->render('bsx/form.html.twig', [
             'controller_name' => 'BSXController',
             'form' => $form->createView(),
+            'title' => 'BSX - Watch Option',
+            'headline' => 'Watch Option',
         ]);
     }
 
@@ -825,6 +924,7 @@ class BSXController extends AbstractController
 
         $postData = json_decode($request->getContent());
         $id = $request->get('id');
+        $silent = (int)$request->get('silent');
         $stock = $repo->findOneBy(['id' => $id]);
 
         $url = $stock->getUrl();
@@ -886,7 +986,7 @@ class BSXController extends AbstractController
             $old_range = "Dead Stop";
         }
 
-        if($current > $buyin){
+        if($current > $buyin && $buyin > $dead){
             $status = 3;
             $range = "Buy In (-$20 to $0)";
             $old_range = (($direction_up === 1) ? 'Buy In Price' : 'Profit Point');
@@ -910,49 +1010,13 @@ class BSXController extends AbstractController
             $old_range = "Golden Target";
         }
         
-        /*
-        if($type === 2) {
-            $status = 1;
-            $range = "Death";
-            $old_range = "Buy In";
-
-            if($current > $buyin){
-                $status = 3;
-                $range = "Buy In";
-                $old_range =  (($direction_up === 1) ? 'Death' : 'Buy In');
-            }
-
-            if($current > $pp){
-                $status = 4;
-                $range = "Strike";
-                $old_range = 'Buy In';
-            }
-        }
-
-        if($type === 3) {
-            $status = 1;
-            $range = "Death";
-            $old_range = "Buy In";
-
-            if($current < $buyin){
-                $status = 3;
-                $range = "Buy In";
-                $old_range =  (($direction_up === 1) ? 'Death' : 'Buy In');
-            }
-
-            if($current < $pp){
-                $status = 4;
-                $range = "Strike";
-                $old_range = 'Buy In';
-            }
-        }
-        */
 
         if($status !== $prev_status){
             $stock->setStatus($status);
             
             $notifier = NotifierFactory::create();
-
+            
+            if($silent !== 1){
             // // Create your notification
             $notification =
                 (new Notification())
@@ -964,7 +1028,7 @@ class BSXController extends AbstractController
             // // Send it
             $notifier->send($notification);
             //*/
-    
+            }
         }
 
 
@@ -987,6 +1051,7 @@ class BSXController extends AbstractController
 
         $postData = json_decode($request->getContent());
         $id = $request->get('id');
+        $silent = (int)$request->get('silent');
         $stock = $repo->findOneBy(['id' => $id]);
         
         $type = $stock->getType();
@@ -1050,7 +1115,7 @@ class BSXController extends AbstractController
             $old_range = "Dead Stop";
         }
 
-        if($current > $buyin){
+        if($current > $buyin && $buyin > $dead){
             $status = 3;
             $range = "Buy In (-$20 to $0)";
             $old_range = (($direction_up === 1) ? 'Buy In Price' : 'Profit Point');
@@ -1077,6 +1142,7 @@ class BSXController extends AbstractController
         if($status !== $prev_status){
             $stock->setStatus($status);
             
+            if($silent !== 1){
             $notifier = NotifierFactory::create();
 
             // // Create your notification
@@ -1086,10 +1152,11 @@ class BSXController extends AbstractController
                 ->setBody($name . ' stock price is now' . (($direction_up === 1) ? ' above ' : ' below ') . $old_range . '. New Range is '. $range . ' ('. $status .')')
                 ->setIcon(__DIR__.'/../../public/images/logos/'. $ticker. '.jpg')
             ;
-    
+
             // // Send it
             $notifier->send($notification);
             //*/
+            }
     
         }
 

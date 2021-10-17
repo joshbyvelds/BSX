@@ -16,7 +16,7 @@ class AddOptionType extends AbstractType
         $builder
             ->add('name')
             ->add('ticker')
-            ->add('first_bought')
+            ->add('bought')
             ->add('type', ChoiceType::class, [
                 'choices'  => [
                     'Long Call' => 'Long Call',

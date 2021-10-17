@@ -31,17 +31,12 @@ class Option
     /**
      * @ORM\Column(type="date")
      */
-    private $first_bought;
-
-    /**
-     * @ORM\Column(type="date")
-     */
-    private $last_bought;
+    private $bought;
 
     /**
      * @ORM\Column(type="date", nullable=true)
      */
-    private $last_sold;
+    private $sold;
 
     /**
      * @ORM\Column(type="integer")
@@ -142,38 +137,26 @@ class Option
         return $this;
     }
 
-    public function getFirstBought(): ?\DateTimeInterface
+    public function getBought(): ?\DateTimeInterface
     {
-        return $this->first_bought;
+        return $this->bought;
     }
 
-    public function setFirstBought(\DateTimeInterface $first_bought): self
+    public function setBought(\DateTimeInterface $bought): self
     {
-        $this->first_bought = $first_bought;
+        $this->bought = $bought;
 
         return $this;
     }
 
-    public function getLastBought(): ?\DateTimeInterface
+    public function getSold(): ?\DateTimeInterface
     {
-        return $this->last_bought;
+        return $this->sold;
     }
 
-    public function setLastBought(\DateTimeInterface $last_bought): self
+    public function setSold(\DateTimeInterface $sold): self
     {
-        $this->last_bought = $last_bought;
-
-        return $this;
-    }
-
-    public function getLastSold(): ?\DateTimeInterface
-    {
-        return $this->last_sold;
-    }
-
-    public function setLastSold(\DateTimeInterface $last_sold): self
-    {
-        $this->last_sold = $last_sold;
+        $this->sold = $sold;
 
         return $this;
     }
@@ -298,6 +281,13 @@ class Option
         return $this;
     }
 
+    public function addProfitCan(float $profit_can): self
+    {
+        $this->profit_can += $profit_can;
+
+        return $this;
+    }
+
     public function getProfitUsd(): ?float
     {
         return $this->profit_usd;
@@ -306,6 +296,13 @@ class Option
     public function setProfitUsd(float $profit_usd): self
     {
         $this->profit_usd = $profit_usd;
+
+        return $this;
+    }
+
+    public function addProfitUsd(float $profit_usd): self
+    {
+        $this->profit_usd += $profit_usd;
 
         return $this;
     }
@@ -343,6 +340,12 @@ class Option
     {
         $this->stock_price = $stock_price;
 
+        return $this;
+    }
+
+    public function sellContracts(int $amount): self
+    {
+        $this->contracts -= $amount;
         return $this;
     }
 }

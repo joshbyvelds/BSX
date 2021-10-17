@@ -73,8 +73,19 @@
         {% endfor %}
 
         <tr>
-            <td></td>
-            <td colspan="8">Settings</td>
+            <td colspan="13">SETTINGS</td>
+        </tr>
+        
+        <tr>
+            <th colspan="8"></th>
+            <th>Slient Mode</th>
+            <th>Master Time</th>
+            <th></th>
+        </tr>
+        
+        <tr>
+            <td colspan="8"></td>
+            <td><input class="master" id="silent_input" type="checkbox" /></td>
             <td><input class="master" id="master_time_input" type="number" value='1' /></td>
             <td></td>
         </tr>
@@ -123,7 +134,7 @@
 
                     if((diff - last) > checkSecond || firstRun){
                         $(this).attr("data-last", diff);
-                        $.post("/watchlist/stock/check", {id:id}, function(json){
+                        $.post("/watchlist/stock/check", {id:id, silent:$('#silent_input').prop('checked') ? 1 : 0}, function(json){
                             var c = (json.dir_up === 2) ? "bi arrow grey bi-dash-square-fill" : (json.dir_up === 1) ? "bi arrow green bi-arrow-up-square-fill" : "bi arrow red bi-arrow-down-square-fill";
                             if(prev[i].length === max_icons){
                                 prev[i].shift();
@@ -170,7 +181,7 @@
 
                     if((diff - last) > checkSecond || firstRun){
                         $(this).attr("data-last", diff);
-                        $.post("/watchlist/option/check", {id:id}, function(json){
+                        $.post("/watchlist/option/check", {id:id, silent:$('#silent_input').prop('checked') ? 1 : 0}, function(json){
                             var c = (json.dir_up === 2) ? "bi arrow grey bi-dash-square-fill" : (json.dir_up === 1) ? "bi arrow green bi-arrow-up-square-fill" : "bi arrow red bi-arrow-down-square-fill";
                             if(prev[stocks + i].length === max_icons){
                                 prev[stocks + i].shift();
