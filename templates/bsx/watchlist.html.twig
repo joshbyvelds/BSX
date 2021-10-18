@@ -17,8 +17,11 @@
             <th>Deadstop</th>
             <th>Buy In</th>
             <th>Profit Point</th>
-            <th colspan="2">Target</th>
-            <th>Golden</th>
+            <th>Bronze(50+)</th>
+            <th>Silver(100+)</th>
+            <th>Golden(250+)</th>
+            <th>Platnum(500+)</th>
+            <th>Diamond(1000+)</th>
             <th>Update Time (minutes)</th>
             <th>Actions</th>
         </tr>
@@ -31,8 +34,11 @@
                 <td class="status dead">{{ stock.deadstop }}</td>
                 <td class="status buy">{{ stock.buyin }}</td>
                 <td class="status pp">{{ stock.profitpoint }}</td>
-                <td class="status target" colspan="2">{{ stock.target }}</td>
-                <td class="status golden">{{ stock.golden }}</td>
+                <td class="status bronze">{{ stock.bronze }}</td>
+                <td class="status silver">{{ stock.silver }}</td>
+                <td class="status gold">{{ stock.gold }}</td>
+                <td class="status platnum">{{ stock.platnum }}</td>
+                <td class="status diamond">{{ stock.diamond }}</td>
                 <td><input class="watchtime_stock" data-stock-id="{{ stock.id }}" data-last="0" type="number" value='1' /></td>
                 <td><a href="/watchlist/stock/delete/{{ stock.id }}" class="btn btn-danger">Delete</a></td>
             </tr>
@@ -49,9 +55,11 @@
             <th>Deadstop</th>
             <th>Buy In</th>
             <th>Profit Point</th>
-            <th>Target</th>
-            <th>Golden</th>
-            <th>Strike Price</th>
+            <th>Bronze(50+)</th>
+            <th>Silver(100+)</th>
+            <th>Golden(250+)</th>
+            <th>Platnum(500+)</th>
+            <th>Diamond(1000+)</th>
             <th>Update Time (minutes)</th>
             <th>Actions</th>
         </tr>
@@ -61,12 +69,14 @@
                 <td><img src="/images/logos/{{ option.ticker }}.jpg" alt="" class="stock_table_logo"></td>
                 <td>{{ option.name }}</td>
                 <td id="current_option{{ option.id }}">{{ option.current }}</td>
-                <td class="status dead"><input class="option_profit_input watch_input" id="option_deadstop_{{ option.id }}" data-id="{{ option.id }}" value="{{ option.deadstop }}"></td>
+                <td class="status dead">{{ option.deadstop }}</td>
                 <td class="status buy">{{ option.buyin }}</td>
-                <td class="status pp"><input class="option_profit_input watch_input" id="option_profit_{{ option.id }}" data-id="{{ option.id }}" value="{{ option.profit }}" /></td>
-                <td class="status target"><input class="option_profit_input watch_input" id="option_target_{{ option.id }}" data-id="{{ option.id }}" value="{{ option.target }}" /></td>
-                <td class="status golden"><input class="option_profit_input watch_input" id="option_golden_{{ option.id }}" data-id="{{ option.id }}" value="{{ option.golden }}" /></td>
-                <td class="status strike">{{ option.strike }}</td>
+                <td class="status pp">{{ option.profit }}</td>
+                <td class="status bronze">{{ option.bronze }}</td>
+                <td class="status silver">{{ option.silver }}</td>
+                <td class="status gold">{{ option.gold }}</td>
+                <td class="status platnum">{{ option.platnum }}</td>
+                <td class="status diamond">{{ option.diamond }}</td>
                 <td><input class="watchtime_option" data-option-id="{{ option.id }}" data-type="{{ option.type }}" data-last="0" type="number" value='1' /></td>
                 <td><a href="/watchlist/option/delete/{{ option.id }}" class="btn btn-danger">Delete</a></td>
             </tr>
@@ -77,14 +87,14 @@
         </tr>
         
         <tr>
-            <th colspan="8"></th>
+            <th colspan="10"></th>
             <th>Slient Mode</th>
             <th>Master Time</th>
             <th></th>
         </tr>
         
         <tr>
-            <td colspan="8"></td>
+            <td colspan="10"></td>
             <td><input class="master" id="silent_input" type="checkbox" /></td>
             <td><input class="master" id="master_time_input" type="number" value='1' /></td>
             <td></td>
@@ -162,11 +172,20 @@
                                     row.find(".status.pp").addClass("on");
                                     break;
                                 case(5):
-                                    row.find(".status.target").addClass("on");
+                                    row.find(".status.bronze").addClass("on");
                                     break;
                                 case(6):
-                                    row.find(".status.golden").addClass("on");
+                                    row.find(".status.silver").addClass("on");
                                     break;
+                                case(7):
+                                    row.find(".status.gold").addClass("on");
+                                    break;    
+                                case(8):
+                                    row.find(".status.platnum").addClass("on");
+                                    break;  
+                                case(9):
+                                    row.find(".status.diamond").addClass("on");
+                                    break;  
                             }
                         });
                     }
@@ -209,11 +228,20 @@
                                     row.find(".status.pp").addClass("on");
                                     break;
                                 case(5):
-                                    row.find(".status.target").addClass("on");
+                                    row.find(".status.bronze").addClass("on");
                                     break;
                                 case(6):
-                                    row.find(".status.golden").addClass("on");
+                                    row.find(".status.silver").addClass("on");
                                     break;
+                                case(7):
+                                    row.find(".status.gold").addClass("on");
+                                    break;    
+                                case(8):
+                                    row.find(".status.platnum").addClass("on");
+                                    break;  
+                                case(9):
+                                    row.find(".status.diamond").addClass("on");
+                                    break; 
                             }
                         });
                     }

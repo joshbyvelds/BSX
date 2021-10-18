@@ -823,8 +823,21 @@ class BSXController extends AbstractController
         $form->handleRequest($request);
 
         if($form->isSubmitted()){
+            $data = $form->getData();
+            $buy = (float)$data->getBuyin();
+            $shares = (float)$data->getShares();
+            $pp = $buy + (20 / $shares);
+            $precision = 2;
+
             $stock->setStatus(0);
             $stock->setCurrent(0);
+            $stock->setDeadstop(round($buy - ((35 - ($this->trading_fee * 2)) / $shares), $precision));
+            $stock->setProfitpoint(round($buy + (20 / $shares), $precision));
+            $stock->setBronze(round($pp + (50 / $shares), $precision));
+            $stock->setSilver(round($pp + (100 / $shares), $precision));
+            $stock->setGold(round($pp + (250 / $shares), $precision));
+            $stock->setPlatnum(round($pp + (500 / $shares), $precision));
+            $stock->setDiamond(round($pp + (1000 / $shares), $precision));
             $em = $this->getDoctrine()->getManager();
             $em->persist($stock);
             $em->flush();
@@ -851,8 +864,24 @@ class BSXController extends AbstractController
         $form->handleRequest($request);
 
         if($form->isSubmitted()){
+            $data = $form->getData();
+            $buy = (float)$data->getBuyin();
+            $contracts = (float)$data->getContracts();
+            $option_buysell_fee = 2 * ((($this->trading_fee / $contracts) / 100) + ($contracts * ($this->contract_fee / 100)));
+            $pp = $buy + $option_buysell_fee;
+            $precision = 2;
+
+            //var_dump($option_buysell_fee);
+
             $option->setStatus(0);
             $option->setCurrent(0);
+            $option->setDeadstop(round($buy - (0.35 - $option_buysell_fee), $precision));
+            $option->setProfit(round($buy + $option_buysell_fee, $precision));
+            $option->setBronze(round($pp + (0.50 / $contracts), $precision));
+            $option->setSilver(round($pp + (1.00 / $contracts), $precision));
+            $option->setGold(round($pp + (2.50 / $contracts), $precision));
+            $option->setPlatnum(round($pp + (5.00 / $contracts), $precision));
+            $option->setDiamond(round($pp + (10.00 / $contracts), $precision));
             $em = $this->getDoctrine()->getManager();
             $em->persist($option);
             $em->flush();
@@ -933,9 +962,12 @@ class BSXController extends AbstractController
         $prev = $stock->getCurrent();
         $dead = $stock->getDeadstop();
         $buyin = $stock->getBuyin();
-        $pp = $stock->getProfitpoint();
-        $target = $stock->getTarget();
-        $golden = $stock->getGolden();
+        $profit = $stock->getProfitpoint();
+        $bronze = $stock->getGold();
+        $silver = $stock->getSilver();
+        $gold = $stock->getGold();
+        $platnum = $stock->getPlatnum();
+        $diamond = $stock->getDiamond();
         $prev_status = $stock->getStatus();
 
         /*
@@ -986,30 +1018,48 @@ class BSXController extends AbstractController
             $old_range = "Dead Stop";
         }
 
-        if($current > $buyin && $buyin > $dead){
+        if($current >= $buyin){
             $status = 3;
             $range = "Buy In (-$20 to $0)";
             $old_range = (($direction_up === 1) ? 'Buy In Price' : 'Profit Point');
         }
 
-        if($current > $pp){
+        if($current >= $profit){
             $status = 4;
-            $range = "Small Profit ($0 to $75)";
-            $old_range = (($direction_up === 1) ? 'Profit Point' : 'Price Target');
+            $range = "Small Profit ($0 to $50)";
+            $old_range = (($direction_up === 1) ? 'Buy In Price' : 'Bronze Range');
         }
 
-        if($current > $target){
+        if($current >= $bronze){
             $status = 5;
-            $range = "Target Profit ($75 to $150)";
-            $old_range = (($direction_up === 1) ? 'Target Price' : 'Golden Target');
+            $range = "Bronze ($50 to $100)";
+            $old_range = (($direction_up === 1) ? 'Small Profit' : 'Silver Range');
         }
 
-        if($current > $golden){
+        if($current >= $silver){
             $status = 6;
-            $range = "Golden Profit (Over $150)";
-            $old_range = "Golden Target";
+            $range = "Silver ($100 to $200)";
+            $old_range = (($direction_up === 1) ? 'Bronze Range' : 'Gold Range');
         }
-        
+
+        if($current >= $gold){
+            $status = 7;
+            $range = "Gold ($200 to $500)";
+            $old_range = (($direction_up === 1) ? 'Silver Range' : 'Platnum Range');
+        }
+
+        if($current >= $platnum){
+            $status = 8;
+            $range = "Platnum ($500 to $1000)";
+            $old_range = (($direction_up === 1) ? 'Gold Range' : 'Diamond Range');
+        }
+
+        if($current >= $diamond){
+            $status = 9;
+            $range = "Diamond ($1000+)";
+            $old_range = 'Platnum Range';
+        }
+       
 
         if($status !== $prev_status){
             $stock->setStatus($status);
@@ -1054,45 +1104,29 @@ class BSXController extends AbstractController
         $silent = (int)$request->get('silent');
         $stock = $repo->findOneBy(['id' => $id]);
         
-        $type = $stock->getType();
-        $url = $stock->getUrl();
+        $type = ((int)$stock->getType() === 1) ? "c" : "p";
+        $expiry_date = $stock->getExpire();
         $name = $stock->getName();
         $ticker = $stock->getTicker();
-        $prev = $stock->getCurrent();
         $strike = $stock->getStrike();
+        $prev = $stock->getCurrent();
         $dead = $stock->getDeadstop();
         $buyin = $stock->getBuyin();
-        $pp = $stock->getProfit();
-        $target = $stock->getTarget();
-        $golden = $stock->getGolden();
+        $profit = $stock->getProfit();
+        $bronze = $stock->getGold();
+        $silver = $stock->getSilver();
+        $gold = $stock->getGold();
+        $platnum = $stock->getPlatnum();
+        $diamond = $stock->getDiamond();
         $prev_status = $stock->getStatus();
 
         /*
         * --- Get Current Price from internet ---
         */
 
-        $content = file_get_contents($url);
-        // checks if the content we're receiving isn't empty, to avoid the warning
-        if ( empty( $content ) ) {
-            return false;
-        }
-
-        // converts all special characters to utf-8
-        $content = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
-
-        // creating new document
-        $doc = new \DOMDocument('1.0', 'utf-8');
-
-        //turning off some errors
-        libxml_use_internal_errors(true);
-
-        // it loads the content without adding enclosing html/body tags and also the doctype declaration
-        $doc->LoadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-
-        $doc->validateOnParse = true;
-        $doc->loadHtml($content);
-        $xpath = new \DOMXPath($doc);
-        $current = (float)substr($xpath->query('//meta[@name="price"]')[0]->attributes[1]->value, 1);
+       // Takes raw data from the request
+       $option_data = json_decode(file_get_contents('https://www.optionsprofitcalculator.com/ajax/getOptions?stock=' . $ticker . '&reqId=1'), true)['options'][$expiry_date][$type][$strike];
+       $current = $option_data['b'];
 
         /*
         * --- Update Status ---
@@ -1104,7 +1138,6 @@ class BSXController extends AbstractController
             $direction_up = 2;
         }
 
-
         if($current > $dead){
             $status = 2;
             $range = "Dead Stop Warning (-$20 to -$35)";
@@ -1115,28 +1148,46 @@ class BSXController extends AbstractController
             $old_range = "Dead Stop";
         }
 
-        if($current > $buyin && $buyin > $dead){
+        if($current >= $buyin){
             $status = 3;
             $range = "Buy In (-$20 to $0)";
             $old_range = (($direction_up === 1) ? 'Buy In Price' : 'Profit Point');
         }
 
-        if($current > $pp){
+        if($current >= $profit){
             $status = 4;
-            $range = "Small Profit ($0 to $75)";
-            $old_range = (($direction_up === 1) ? 'Profit Point' : 'Price Target');
+            $range = "Small Profit ($0 to $50)";
+            $old_range = (($direction_up === 1) ? 'Buy In Price' : 'Bronze Range');
         }
 
-        if($current > $target){
+        if($current >= $bronze){
             $status = 5;
-            $range = "Target Profit ($75 to $150)";
-            $old_range = (($direction_up === 1) ? 'Target Price' : 'Golden Target');
+            $range = "Bronze ($50 to $100)";
+            $old_range = (($direction_up === 1) ? 'Small Profit' : 'Silver Range');
         }
 
-        if($current > $golden){
+        if($current >= $silver){
             $status = 6;
-            $range = "Golden Profit (Over $150)";
-            $old_range = "Golden Target";
+            $range = "Silver ($100 to $200)";
+            $old_range = (($direction_up === 1) ? 'Bronze Range' : 'Gold Range');
+        }
+
+        if($current >= $gold){
+            $status = 7;
+            $range = "Gold ($200 to $500)";
+            $old_range = (($direction_up === 1) ? 'Silver Range' : 'Platnum Range');
+        }
+
+        if($current >= $platnum){
+            $status = 8;
+            $range = "Platnum ($500 to $1000)";
+            $old_range = (($direction_up === 1) ? 'Gold Range' : 'Diamond Range');
+        }
+
+        if($current >= $diamond){
+            $status = 9;
+            $range = "Diamond ($1000+)";
+            $old_range = 'Platnum Range';
         }
 
         if($status !== $prev_status){
@@ -1165,7 +1216,7 @@ class BSXController extends AbstractController
         $em->flush();
 
 
-        $response = new Response(json_encode(['success' => 1, 'id' => $id, 'status' => $status, 'dir_up' => $direction_up, 'url' => $url, 'current' => $current]));
+        $response = new Response(json_encode(['success' => 1, 'id' => $id, 'status' => $status, 'dir_up' => $direction_up, 'current' => $current]));
         $response->headers->set('Content-Type', 'application/json');
         return $response;
     }

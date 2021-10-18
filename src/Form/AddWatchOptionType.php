@@ -15,20 +15,17 @@ class AddWatchOptionType extends AbstractType
         $builder
             ->add('name')
             ->add('ticker')
-            ->add('url')
             ->add('type', ChoiceType::class, [
                 'choices'  => [
                     'Long Call' => 1,
                     'Long Put' => 2,
                 ],
             ])
-
-            ->add('deadstop')
-            ->add('buyin')
-            ->add('profit')
             ->add('strike')
-            ->add('target')
-            ->add('golden')
+            ->add('contracts')
+            
+            ->add('expire')
+            ->add('buyin')
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'

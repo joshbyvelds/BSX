@@ -17,11 +17,8 @@ class AddWatchStockType extends AbstractType
             ->add('name')
             ->add('ticker')
             ->add('url')
-            ->add('deadstop')
+            ->add('shares')
             ->add('buyin')
-            ->add('profitpoint')
-            ->add('target')
-            ->add('golden')
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'

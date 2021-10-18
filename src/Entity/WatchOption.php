@@ -28,14 +28,29 @@ class WatchOption
     private $ticker;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="integer")
      */
-    private $url;
+    private $type;
+
+    /**
+     * @ORM\Column(type="string", length=10)
+     */
+    private $Strike;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $type;
+    private $contracts;
+
+    /**
+     * @ORM\Column(type="string", length=12)
+     */
+    private $expire;
+
+     /**
+     * @ORM\Column(type="integer")
+     */
+    private $status;
 
     /**
      * @ORM\Column(type="float")
@@ -60,22 +75,28 @@ class WatchOption
     /**
      * @ORM\Column(type="float")
      */
-    private $strike;
+    private $bronze;
 
     /**
      * @ORM\Column(type="float")
      */
-    private $target;
+    private $silver;
 
     /**
      * @ORM\Column(type="float")
      */
-    private $golden;
+    private $gold;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="float")
      */
-    private $status;
+    private $platnum;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $diamond;
+
 
     public function getId(): ?int
     {
@@ -106,18 +127,6 @@ class WatchOption
         return $this;
     }
 
-    public function getUrl(): ?string
-    {
-        return $this->url;
-    }
-
-    public function setUrl(string $url): self
-    {
-        $this->url = $url;
-
-        return $this;
-    }
-
     public function getType(): ?string
     {
         return $this->type;
@@ -126,6 +135,18 @@ class WatchOption
     public function setType(string $type): self
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    public function getStrike(): ?string
+    {
+        return $this->Strike;
+    }
+
+    public function setStrike(string $Strike): self
+    {
+        $this->Strike = $Strike;
 
         return $this;
     }
@@ -178,42 +199,6 @@ class WatchOption
         return $this;
     }
 
-    public function getStrike(): ?float
-    {
-        return $this->strike;
-    }
-
-    public function setStrike(float $strike): self
-    {
-        $this->strike = $strike;
-
-        return $this;
-    }
-
-    public function getTarget(): ?float
-    {
-        return $this->target;
-    }
-
-    public function setTarget(float $target): self
-    {
-        $this->target = $target;
-
-        return $this;
-    }
-
-    public function getGolden(): ?float
-    {
-        return $this->golden;
-    }
-
-    public function setGolden(float $golden): self
-    {
-        $this->golden = $golden;
-
-        return $this;
-    }
-
     public function getStatus(): ?int
     {
         return $this->status;
@@ -222,6 +207,90 @@ class WatchOption
     public function setStatus(int $status): self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getExpire(): ?string
+    {
+        return $this->expire;
+    }
+
+    public function setExpire(string $expire): self
+    {
+        $this->expire = $expire;
+
+        return $this;
+    }
+
+    public function getBronze(): ?float
+    {
+        return $this->bronze;
+    }
+
+    public function setBronze(float $bronze): self
+    {
+        $this->bronze = $bronze;
+
+        return $this;
+    }
+
+    public function getSilver(): ?float
+    {
+        return $this->silver;
+    }
+
+    public function setSilver(float $silver): self
+    {
+        $this->silver = $silver;
+
+        return $this;
+    }
+
+    public function getGold(): ?float
+    {
+        return $this->gold;
+    }
+
+    public function setGold(float $gold): self
+    {
+        $this->gold = $gold;
+
+        return $this;
+    }
+
+    public function getPlatnum(): ?float
+    {
+        return $this->platnum;
+    }
+
+    public function setPlatnum(float $platnum): self
+    {
+        $this->platnum = $platnum;
+
+        return $this;
+    }
+
+    public function getDiamond(): ?float
+    {
+        return $this->diamond;
+    }
+
+    public function setDiamond(float $diamond): self
+    {
+        $this->diamond = $diamond;
+
+        return $this;
+    }
+
+    public function getContracts(): ?int
+    {
+        return $this->contracts;
+    }
+
+    public function setContracts(int $contracts): self
+    {
+        $this->contracts = $contracts;
 
         return $this;
     }

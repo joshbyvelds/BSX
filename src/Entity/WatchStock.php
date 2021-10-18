@@ -43,16 +43,6 @@ class WatchStock
     private $profitpoint;
 
     /**
-     * @ORM\Column(type="float")
-     */
-    private $target;
-
-    /**
-     * @ORM\Column(type="float")
-     */
-    private $golden;
-
-    /**
      * @ORM\Column(type="string", length=255)
      */
     private $url;
@@ -65,7 +55,37 @@ class WatchStock
     /**
      * @ORM\Column(type="integer")
      */
+    private $shares;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
     private $status;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $bronze;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $silver;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $gold;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $platnum;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $diamond;
 
     public function getId(): ?int
     {
@@ -188,6 +208,78 @@ class WatchStock
     public function setStatus(int $status): self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getBronze(): ?float
+    {
+        return $this->bronze;
+    }
+
+    public function setBronze(float $bronze): self
+    {
+        $this->bronze = $bronze;
+
+        return $this;
+    }
+
+    public function getSilver(): ?float
+    {
+        return $this->silver;
+    }
+
+    public function setSilver(float $silver): self
+    {
+        $this->silver = $silver;
+
+        return $this;
+    }
+
+    public function getGold(): ?float
+    {
+        return $this->gold;
+    }
+
+    public function setGold(float $gold): self
+    {
+        $this->gold = $gold;
+
+        return $this;
+    }
+
+    public function getPlatnum(): ?float
+    {
+        return $this->platnum;
+    }
+
+    public function setPlatnum(float $platnum): self
+    {
+        $this->platnum = $platnum;
+
+        return $this;
+    }
+
+    public function getDiamond(): ?float
+    {
+        return $this->diamond;
+    }
+
+    public function setDiamond(float $diamond): self
+    {
+        $this->diamond = $diamond;
+
+        return $this;
+    }
+
+    public function getShares(): ?int
+    {
+        return $this->shares;
+    }
+
+    public function setShares(int $shares): self
+    {
+        $this->shares = $shares;
 
         return $this;
     }

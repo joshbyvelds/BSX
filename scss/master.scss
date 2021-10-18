@@ -75,28 +75,69 @@ input.current_price {
 }
 
 .status.on{
-      &.dead{
-            background: lightcoral;
+      color: black;
 
+      &.dead{
+            background: url("/images/backgrounds/warning.jpg");
+            background-size: 100% 100%;
+            color: white;
+            text-shadow: 0px 1px 2px black;
+            
             &.bad{
-                  background: red;
+                  background: url("/images/backgrounds/dead.jpg");
+                  background-size: 100% 100%;
+                  color: white;
             }
       }
 
       &.buy {
-            background: pink;
+            background: url("/images/backgrounds/buyin.jpg");
+            background-size: 100% 100%;
+            color: white;
+            text-shadow: 0px 1px 2px black;
       }
 
       &.pp {
-            background: goldenrod;
+            background: url("/images/backgrounds/profit.jpg");
+            background-size: 100% 100%;
+            color: white;
+            text-shadow: 0px 1px 2px black;
       }
 
-      &.target {
-            background: lightseagreen;
+      &.bronze {
+            background: url("/images/backgrounds/bronze.jpg");
+            background-size: 100% 100%;
+            color: white;
+            text-shadow: 0px 1px 2px black;
       }
 
-      &.golden {
-            background: gold;
+      &.silver {
+            background: url("/images/backgrounds/silver.jpg");
+            background-size: 100% 100%;
+            color: white;
+            text-shadow: 0px 1px 2px black;
+      }
+
+      &.gold {
+            background: url("/images/backgrounds/gold.jpg");
+            background-size: 100% 100%;
+            color: white;
+            text-shadow: 0px 1px 2px black;
+      }
+
+      &.platnum {
+            background: url("/images/backgrounds/platnum.jpg");
+            background-size: 100% 100%;
+            color: white;
+            text-shadow: 0px 1px 2px black;
+      }
+
+      &.diamond {
+            background: url("/images/backgrounds/diamond.jpg");
+            background-size: 140% 170%;
+            background-position: -40px -10px;
+            color: white;
+            text-shadow: 0px 1px 2px black;
       }
 }
 
