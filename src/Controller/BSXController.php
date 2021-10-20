@@ -963,7 +963,7 @@ class BSXController extends AbstractController
         $dead = $stock->getDeadstop();
         $buyin = $stock->getBuyin();
         $profit = $stock->getProfitpoint();
-        $bronze = $stock->getGold();
+        $bronze = $stock->getBronze();
         $silver = $stock->getSilver();
         $gold = $stock->getGold();
         $platnum = $stock->getPlatnum();
@@ -1113,7 +1113,7 @@ class BSXController extends AbstractController
         $dead = $stock->getDeadstop();
         $buyin = $stock->getBuyin();
         $profit = $stock->getProfit();
-        $bronze = $stock->getGold();
+        $bronze = $stock->getBronze();
         $silver = $stock->getSilver();
         $gold = $stock->getGold();
         $platnum = $stock->getPlatnum();
