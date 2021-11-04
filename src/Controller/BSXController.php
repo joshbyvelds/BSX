@@ -18,6 +18,7 @@ use App\Entity\TenPlanWeek;
 use App\Entity\WatchStock;
 use App\Entity\WatchOption;
 use App\Entity\WizardPlay;
+use App\Entity\Note;
 use App\Form\AddStockType;
 use App\Form\AddWatchStockType;
 use App\Form\AddWatchOptionType;
@@ -29,6 +30,7 @@ use App\Form\SellOptionType;
 use App\Form\DividendType;
 use App\Form\TenPlanWeekType;
 use App\Form\WizardType;
+use App\Form\NoteType;
 use App\Repository\StockRepository;
 use App\Repository\OptionRepository;
 use App\Repository\PaperStockRepository;
@@ -37,6 +39,7 @@ use App\Repository\TenPlanWeekRepository;
 use App\Repository\WizardPlayRepository;
 use App\Repository\WatchStockRepository;
 use App\Repository\WatchOptionRepository;
+use App\Repository\NoteRepository;
 
 use Joli\JoliNotif\Notification;
 use Joli\JoliNotif\NotifierFactory;
@@ -45,10 +48,10 @@ class BSXController extends AbstractController
 {
     private $trading_fee = 9.95;
     private $contract_fee = 1.25;
-    private $CANtoUSDBuy = 0.8378;
-    private $USDtoCANBuy = 1.2286;
-    private $CANtoUSDSell = 0.8139;
-    private $USDtoCANSell = 1.1936;
+    private $CANtoUSDBuy = 0.8219;
+    private $USDtoCANBuy = 1.2517;
+    private $CANtoUSDSell = 0.7989;
+    private $USDtoCANSell = 1.2167;
     
     /**
      * @Route("/", name="index")
@@ -391,15 +394,18 @@ class BSXController extends AbstractController
 
         if($form->isSubmitted()){
             $data = $form->getData();
+            $cost = ($data->getAverage() * 100 * $data->getContracts()) + ($this->contract_fee * $data->getContracts()) + $this->trading_fee;
+            $option->setCost($cost);
+            
             if($data->getBuyCurrency() === 1)
             {
                 if($data->getCurrency() === 1){
-                    $option->setProfitCan(($data->getCost()) * -1);
+                    $option->setProfitCan($cost * -1);
                     $option->setProfitUsd(0);
                 }
 
                 if($data->getCurrency() === 2){
-                    $option->setProfitCan((($data->getCost()) * $this->USDtoCANBuy) * -1);
+                    $option->setProfitCan(($cost * $this->USDtoCANBuy) * -1);
                     $option->setProfitUsd(0);
                 }
             }
@@ -408,12 +414,12 @@ class BSXController extends AbstractController
             {
                 if($data->getCurrency() === 1){
                     $option->setProfitCan(0);
-                    $option->setProfitUsd((($data->getCost()) * $this->CANtoUSDBuy) * -1);
+                    $option->setProfitUsd(($cost * $this->CANtoUSDBuy) * -1);
                 }
 
                 if($data->getCurrency() === 2){
                     $option->setProfitCan(0);
-                    $option->setProfitUsd(($data->getCost()) * -1);
+                    $option->setProfitUsd($cost * -1);
                 }
             }
 
@@ -1219,6 +1225,58 @@ class BSXController extends AbstractController
         $response = new Response(json_encode(['success' => 1, 'id' => $id, 'status' => $status, 'dir_up' => $direction_up, 'current' => $current]));
         $response->headers->set('Content-Type', 'application/json');
         return $response;
+    }
+
+    /////////////// NOTES ///////////////////////////
+
+        /**
+     * @Route("/notes", name="notes")
+     */
+    public function notes(NoteRepository $notesRepo): Response
+    {
+        $notes = $notesRepo->findAll();
+        return $this->render('bsx/notes.html.twig', [
+            'notes' => $notes
+        ]);
+    }
+
+    /**
+     * @Route("/notes/add", name="note_add")
+     */
+    public function addNote(Request $request): Response
+    {
+        $note = new Note();
+        $form = $this->createForm(NoteType::class, $note);
+        
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()){
+            $date = new \DateTime();
+            $note->setDateCreated($date);
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($note);
+            $em->flush();
+
+            return $this->redirectToRoute('notes');
+        }
+
+        return $this->render('bsx/form.html.twig', [
+            'controller_name' => 'BSXController',
+            'form' => $form->createView(),
+            'title' => 'BSX - Add Note',
+            'headline' => 'Add New Note',
+        ]);
+    }
+
+    /**
+     * @Route("/notes/delete/{id}", name="note_delete", requirements={"id"="\d+"})
+     */
+    public function deleteNote(Note $note): Response
+    {
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($note);
+        $em->flush();
+        return $this->redirectToRoute('notes');
     }
 }
 

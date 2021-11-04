@@ -1,33 +1,31 @@
-<article>
-    <h2>Notes on Project</h2>
-    
-    <h3>What should this project do</h3>
-    <p>
-        <ul>
-            <li>View what stocks I own, how much of each stock,what the current stock price is, and how much I would gain/loss if I sold it all (with and without dividends) ✔️</li>
-            <li>Current Gain/Loss for all of my stocks combined (with and without dividends) ✔️</li>
-            <li>Dividend Payments for each stock I own and how much I earned. Each Payment and Total  ✔️</li>
-            <li>Dividend Total Amounts for Each month  ✔️</li>
-        </ul>
-    </p>
-</article>
+{% extends 'base.html.twig' %}
 
-<article>
-    <h2>TODO LIST</h2>
-    <h3>Version 1</h3>
-    <ul>
-        <li>Create Dividened Entity, Page and Form  ✔️</li>
-        <li>Get Total Dividened Payment amount and add to homepage stock table column ✔️</li>
-        <li>Create a new column on table called Profit Point. it should indicate the price a stock needs be at in order to make a profit on a sale. ✔️</li>
-        <li>Set Buys property to 1 on stock entity when you add a stock</li>
-        <li>Increase Buys property by 1 when you buy more of a stock ✔️</li>
-        <li>Decrease Buys to zero when you sell all of a stock OR when you sell some shares of a stock above profit point</li>
-        <li>Watchlist: create a single input that will change all time stock/option inputs to the it's vaule when adjusted. ✔️</li>
-        <li>Watchlist: Create a new table row set for options. include current price, deadstop (ajustable), strike, & profit point (ajustable)</li>
-    </ul>
-    
-    <h3>Version 2</h3>
-    <ul>
-        <li></li>
-    </ul>
-</article>
+{% block title %}Hello BSXController!{% endblock %}
+
+{% block body %}
+    <h1>Notes</h1>
+    <a href="/notes/add" class="btn btn-primary">ADD NEW NOTE</a>
+    <a href="/" class="btn btn-primary">MAIN</a>
+
+    <table class="table table-bordered table-responsive">
+        <tr>
+            <td colspan="22">Notes and Comments</td>
+        </tr>
+        
+        <tr>
+            <th>Title</th>
+            <th>Date Created</th>
+            <th>Note</th>
+            <th>Actions</th>
+        </tr>
+
+        {% for note in notes %}
+            <tr data-id="{{ note.id }}">
+                <td>{{ note.dateCreated|date("m/d/Y") }}</td>
+                <td>{{ note.title }}</td>
+                <td>{{ note.body }}</td>
+                <td><a href="/notes/delete/{{ note.id }}" class="btn btn-danger">Delete</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

@@ -26,7 +26,6 @@ class AddOptionType extends AbstractType
             ->add('contracts')
             ->add('strike_price')
             ->add('average')
-            ->add('cost')
             ->add('expires')
             ->add('current_price')
             ->add('stock_price')
