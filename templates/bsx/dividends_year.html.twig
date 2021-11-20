@@ -6,28 +6,32 @@
     <h1>Dividends - Month</h1>
     <table class="table table-bordered table-responsive">
         <tr>
-            <th>Month</th>
+            <th>Year</th>
             <th>Amount</th>
         </tr>
 
-        {% set months = [] %}
+        {% set years = [] %}
         {% for dividend_payment in dividends %}
-            {% if months[dividend_payment.paymentDate|date("F Y")] is defined %}
-                {% set months = months|merge({(dividend_payment.paymentDate|date("F Y")):months[dividend_payment.paymentDate|date("F Y")] + dividend_payment.amount}) %}
+            {% set year = dividend_payment.paymentDate|date("Y") %}
+            {% set year = " " ~ year|raw %} {# I have to add a space or twiw does not loop correctly, must be due to the key being a number #}
+
+            {% if years[year] is defined %}
+                {% set years = years|merge({(year):years[year] + dividend_payment.amount}) %}
             {% else %}
-                {% set months = months|merge({(dividend_payment.paymentDate|date("F Y")):dividend_payment.amount}) %}    
+                {{year}}
+                {% set years = years|merge({(year):dividend_payment.amount}) %}    
             {% endif %}
         {% endfor %}
 
-        {% for key,month in months %}
+        {% for key,year in years %}
             <tr>
                 <td>{{key}}</td>
-                <td>${{month}}</td>
+                <td>${{year}}</td>
             </tr>
         {% endfor %}  
     </table>
     <a href="/dividends" class="btn btn-primary">DIVIDENDS STOCK</a>
-    <a href="/dividends/year" class="btn btn-primary">DIVIDENDS YEAR</a>
+    <a href="/dividends/month" class="btn btn-primary">DIVIDENDS MONTH</a>
     <a href="/dividends/add" class="btn btn-primary">ADD DIVIDEND</a>
     <a href="/" class="btn btn-primary">MAIN</a>   
 {% endblock %}
